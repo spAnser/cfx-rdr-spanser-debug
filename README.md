@@ -18,6 +18,11 @@ So if you wanted to give yourself a Pump Shotgun with the native command you can
 ex. `native 0xB282DC6EBD803C75 PLAYER_ID HASH_WEAPON_SHOTGUN_PUMP 500 true 0`  
 This will automatically look up hashes if the string starts with `HASH_`. `PLAYER_ID` will be replaced using GetPlayerPed()
 
+![Native Command](_screenshots/native-command.png)
+
 Lastly this can either display info of surrounding entities or track them as you come into contact with them based on the Config setting, tracking by default.
 
 `clear_tracking` can be used to clear all currently tracked IDs.
+
+![Entity Info](_screenshots/entity-info.png)
+![Entity Info 2](_screenshots/entity-info-2.png)
