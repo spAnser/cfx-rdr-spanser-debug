@@ -282,7 +282,15 @@ function DrawVehicleInfo(entity)
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
     local str = "[2] ID: " .. tostring(entity)
-    str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
+    local model_hash = GetEntityModel(entity)
+    if not HASH_VEHICLES[model_hash]  then
+        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
+    else
+        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
+    end
+    if HASH_VEHICLES[model_hash] then
+        str = str .. HASH_VEHICLES[model_hash] .. "\n"
+    end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
 
@@ -378,6 +386,13 @@ RegisterCommand('spawn', function(source, args, rawCommand)
         if Config.TrackEntities == 1 then
             entitiesToDraw[entity] = true
         end
+    end)
+end)
+
+RegisterCommand("delete_entity", function(source, args, rawCommand)
+    -- Seems to only work with entities spawn with the spawn command
+    Citizen.CreateThread(function()
+        DeleteEntity(args[1])
     end)
 end)
 

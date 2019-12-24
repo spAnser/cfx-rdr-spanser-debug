@@ -5,5 +5,6 @@ client_scripts {
     'config.lua',
     'hashes/hash_peds.lua',
     'hashes/hash_provisions.lua',
+    'hashes/hash_vehicles.lua',
     'client/cl_main.lua',
 }
