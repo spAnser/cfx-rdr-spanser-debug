@@ -2,6 +2,7 @@ local lightningPrompt = 0
 local entitiesToDraw = {}
 local itemsToDraw = {}
 local foliageToDraw = {}
+local vehiclesToDraw = {}
 
 Citizen.CreateThread(function()
     -- UI loop
@@ -22,6 +23,17 @@ Citizen.CreateThread(function()
         pcx = Floor(pcx * 100) / 100.0
         pcy = Floor(pcy * 100) / 100.0
         DrawTxt(player .."\n?", pcx, pcy, 0.2, true, 255, 255, 255, 255, true, 2)
+        local carriedEntity = Citizen.InvokeNative(0xD806CD2A4F2C2996, player)
+        local carriedEntityModel = GetEntityModel(carriedEntity)
+        local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
+        if HASH_PEDS[carriedEntityModel] then
+            local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7)
+            DrawTxt("Carrying: " .. HASH_PEDS[carriedEntityModel], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+        end
+        if HASH_PROVISIONS[carriedEntityHash] then
+            local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.75)
+            DrawTxt("Carrying: " .. HASH_PROVISIONS[carriedEntityHash], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+        end
 
         -- Draw Lightning Strike/Spawn Location
         local strikeCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, -0.5)
@@ -95,7 +107,14 @@ Citizen.CreateThread(function()
                 if hit > 0 then
                     local pc, pcx, pcy = GetScreenCoordFromWorldCoord(endCoords.x, endCoords.y, endCoords.z)
                     local str = flag .. ": " .. tostring(entityHit) .. "\n"
-                    if flag == 2^3 or flag == 2^11 then
+                    if flag == 2 then
+                        if Config.TrackEntities == 1 then
+                            vehiclesToDraw[entityHit] = true
+                        else
+                            str = false
+                            DrawVehicleInfo(entityHit)
+                        end
+                    elseif flag == 2^3 or flag == 2^11 then
                         if Config.TrackEntities == 1 then
                             entitiesToDraw[entityHit] = true
                         else
@@ -177,6 +196,12 @@ function DrawTrackedInfo()
             DrawFoliageInfo(entity)
         end
     end
+
+    for entity, active in pairs(vehiclesToDraw) do
+        if active and IsEntityOnScreen(entity) then
+            DrawVehicleInfo(entity)
+        end
+    end
 end
 
 function DrawEntityInfo(entity)
@@ -187,7 +212,15 @@ function DrawEntityInfo(entity)
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
     local str = "ID: " .. tostring(entity)
-    str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
+    local model_hash = GetEntityModel(entity)
+    if not HASH_PEDS[model_hash]  then
+        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
+    else
+        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
+    end
+    if HASH_PEDS[model_hash] then
+        str = str .. HASH_PEDS[model_hash] .. "\n"
+    end
     str = str .. "MetapedType: " .. tostring(Citizen.InvokeNative(0xEC9A1261BF0CE510, entity))
     str = str .. " | PedType: " .. tostring(GetPedType(entity))
     str = str .. " | Pop Type: ".. tostring(GetEntityPopulationType(entity)) .. "\n"
@@ -200,8 +233,8 @@ function DrawEntityInfo(entity)
     str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
     local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
     str = str .. " | " .. tostring(provision_hash)
-    if Provisions[provision_hash] then
-        str = str .. "\n" .. Provisions[provision_hash]
+    if HASH_PROVISIONS[provision_hash] then
+        str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
@@ -213,7 +246,7 @@ function DrawItemInfo(entity)
     -- Rounding to prevent some jitter
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
-    local str = "ID: " .. tostring(entity)
+    local str = "[16] ID: " .. tostring(entity)
     str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
     str = str .. "Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
     local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
@@ -223,8 +256,8 @@ function DrawItemInfo(entity)
     str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
     local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
     str = str .. " | " .. tostring(provision_hash)
-    if Provisions[provision_hash] then
-        str = str .. "\n" .. Provisions[provision_hash]
+    if HASH_PROVISIONS[provision_hash] then
+        str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
@@ -236,7 +269,19 @@ function DrawFoliageInfo(entity)
     -- Rounding to prevent some jitter
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
-    local str = "ID: " .. tostring(entity)
+    local str = "[256] ID: " .. tostring(entity)
+    str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
+    DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+end
+
+function DrawVehicleInfo(entity)
+    local eCoords = GetEntityCoords(entity)
+    -- Draw Location on Screen
+    local ec, ecx, ecy = GetScreenCoordFromWorldCoord(eCoords.x, eCoords.y, eCoords.z)
+    -- Rounding to prevent some jitter
+    ecx = Floor(ecx * 100) / 100.0
+    ecy = Floor(ecy * 100) / 100.0
+    local str = "[2] ID: " .. tostring(entity)
     str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
@@ -293,6 +338,7 @@ RegisterCommand("clear_tracking", function(source, args, rawCommand)
     entitiesToDraw = {}
     itemsToDraw = {}
     foliageToDraw = {}
+    vehiclesToDraw = {}
 end)
 
 RegisterCommand("weather", function(source, args, rawCommand)
@@ -312,7 +358,7 @@ RegisterCommand('spawn', function(source, args, rawCommand)
     local player = GetPlayerPed()
     local pCoords = GetEntityCoords(player)
     local pDir = GetEntityHeading(player)
-    -- 0x405180B14DA5A935 (entity, ??) -- Always makes PedType 4
+    -- 0x405180B14DA5A935 SetPedType(entity, ??) -- Always makes PedType 4
 
     local spawnCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, 0)
 
@@ -323,7 +369,7 @@ RegisterCommand('spawn', function(source, args, rawCommand)
     print(IsModelInCdimage(modelHash), IsModelAVehicle(modelHash), IsModelAPed(modelHash), IsModelValid(modelHash))
     Citizen.CreateThread(function()
         LoadModel(modelHash)
-        local entity = CreatePed(modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, pDir, true, true, true, true)
+        local entity = CreatePed(modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, pDir, false, false, false, false)
         SetEntityVisible(entity, true)
         SetEntityAlpha(entity, 255, false)
         Citizen.InvokeNative(0x283978A15512B2FE, entity, true)
