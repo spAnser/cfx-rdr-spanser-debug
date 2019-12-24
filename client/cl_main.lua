@@ -24,8 +24,8 @@ RegisterNUICallback('loaded', function(data, cb)
 end)
 
 RegisterNUICallback('set_tracking', function(data)
-    Config[data.key] = data.value
     if data.value == false then
+        Config[data.key] = false
         if data.key == 'TrackEntities' then
             entitiesToDraw = {}
         elseif data.key == 'TrackFoliage' then
@@ -35,6 +35,8 @@ RegisterNUICallback('set_tracking', function(data)
         elseif data.key == 'TrackVehicles' then
             vehiclesToDraw = {}
         end
+    else
+        Config[data.key] = 1
     end
 end)
 
@@ -379,10 +381,14 @@ RegisterCommand("swap", function(source, args, rawCommand)
         if args[1]:sub(1, #hashStart) == hashStart then
             local hashName = GetTextSubstring(args[1], 5, GetLengthOfLiteralString(args[1]))
             args[1] = GetHashKey(hashName)
+        elseif not (nil == tonumber(args[1])) then
+            args[1] = tonumber(args[1])
         end
         if args[2]:sub(1, #hashStart) == hashStart then
             local hashName = GetTextSubstring(args[2], 5, GetLengthOfLiteralString(args[2]))
             args[2] = GetHashKey(hashName)
+        elseif not (nil == tonumber(args[2])) then
+            args[2] = tonumber(args[2])
         end
         local player = PlayerPedId()
         local coords = GetEntityCoords(player)
