@@ -188,7 +188,7 @@ end)
 
 function LoadModel(model)
     local attempts = 0
-    while attempts < 250 and not HasModelLoaded(model) do
+    while attempts < 25 and not HasModelLoaded(model) do
         RequestModel(model)
         Citizen.Wait(100)
         attempts = attempts + 1
