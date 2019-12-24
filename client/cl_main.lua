@@ -247,7 +247,15 @@ function DrawItemInfo(entity)
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
     local str = "[16] ID: " .. tostring(entity)
-    str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
+    local model_hash = GetEntityModel(entity)
+    if not HASH_OBJECTS[model_hash]  then
+        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
+    else
+        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
+    end
+    if HASH_OBJECTS[model_hash] then
+        str = str .. HASH_OBJECTS[model_hash] .. "\n"
+    end
     str = str .. "Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
     local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
     str = str .. "Status: " .. GetStatusText(entityStatus) .. "\n"
