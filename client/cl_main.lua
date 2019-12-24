@@ -191,14 +191,18 @@ function DrawEntityInfo(entity)
     str = str .. "MetapedType: " .. tostring(Citizen.InvokeNative(0xEC9A1261BF0CE510, entity))
     str = str .. " | PedType: " .. tostring(GetPedType(entity))
     str = str .. " | Pop Type: ".. tostring(GetEntityPopulationType(entity)) .. "\n"
-    str = str .. "Looted: " .. tostring(Citizen.InvokeNative(0x8DE41E9902E85756, entity))
+    str = str .. "Looted: " .. tostring(Citizen.InvokeNative(0x8DE41E9902E85756, entity)) -- Set looted status with 0x6BCF5F3D8FFE988D
     str = str .. " | Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
     local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
     str = str .. "Status: " .. GetStatusText(entityStatus) .. "\n"
     str = str .. tostring(Citizen.InvokeNative(0x97F696ACA466B4E0, entity))
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0x31FEF6A20F00B963, entity)) -- Entity Exact ?
     str = str .. " | " .. tostring(Citizen.InvokeNative(0xD21C7418C590BB40, entity)) -- Dead?
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity)) .. "\n"
+    str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
+    local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
+    str = str .. " | " .. tostring(provision_hash)
+    if Provisions[provision_hash] then
+        str = str .. "\n" .. Provisions[provision_hash]
+    end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
 
@@ -215,9 +219,13 @@ function DrawItemInfo(entity)
     local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
     str = str .. "Status: " .. GetStatusText(entityStatus) .. "\n"
     str = str .. tostring(Citizen.InvokeNative(0x97F696ACA466B4E0, entity))
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0x31FEF6A20F00B963, entity)) -- Entity Exact ?
     str = str .. " | " .. tostring(Citizen.InvokeNative(0xD21C7418C590BB40, entity)) -- Dead?
     str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
+    local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
+    str = str .. " | " .. tostring(provision_hash)
+    if Provisions[provision_hash] then
+        str = str .. "\n" .. Provisions[provision_hash]
+    end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
 
@@ -304,6 +312,7 @@ RegisterCommand('spawn', function(source, args, rawCommand)
     local player = GetPlayerPed()
     local pCoords = GetEntityCoords(player)
     local pDir = GetEntityHeading(player)
+    -- 0x405180B14DA5A935 (entity, ??) -- Always makes PedType 4
 
     local spawnCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, 0)
 
