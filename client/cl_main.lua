@@ -1,8 +1,46 @@
 local lightningPrompt = 0
 local entitiesToDraw = {}
-local itemsToDraw = {}
 local foliageToDraw = {}
+local itemsToDraw = {}
 local vehiclesToDraw = {}
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(1)
+        if IsControlJustReleased(0, 0xA5BDCD3C) then
+            SetNuiFocus(true, true)
+        end
+    end
+end)
+
+RegisterNUICallback('loaded', function(data, cb)
+    SendNUIMessage({
+        type = 'ON_SET_TRACKED',
+        entities = Config.TrackEntities,
+        foliage = Config.TrackFoliage,
+        items = Config.TrackItems,
+        vehicles = Config.TrackVehicles,
+    })
+end)
+
+RegisterNUICallback('set_tracking', function(data)
+    Config[data.key] = data.value
+    if data.value == false then
+        if data.key == 'TrackEntities' then
+            entitiesToDraw = {}
+        elseif data.key == 'TrackFoliage' then
+            foliageToDraw = {}
+        elseif data.key == 'TrackItems' then
+            itemsToDraw = {}
+        elseif data.key == 'TrackVehicles' then
+            vehiclesToDraw = {}
+        end
+    end
+end)
+
+RegisterNUICallback('close_ui', function(data, cb)
+    SetNuiFocus(false)
+end)
 
 Citizen.CreateThread(function()
     -- UI loop
@@ -108,7 +146,7 @@ Citizen.CreateThread(function()
                     local pc, pcx, pcy = GetScreenCoordFromWorldCoord(endCoords.x, endCoords.y, endCoords.z)
                     local str = flag .. ": " .. tostring(entityHit) .. "\n"
                     if flag == 2 then
-                        if Config.TrackEntities == 1 then
+                        if Config.TrackVehicles == 1 then
                             vehiclesToDraw[entityHit] = true
                         else
                             str = false
@@ -122,14 +160,14 @@ Citizen.CreateThread(function()
                             DrawEntityInfo(entityHit)
                         end
                     elseif flag == 2^4 then
-                        if Config.TrackEntities == 1 then
+                        if Config.TrackItems == 1 then
                             itemsToDraw[entityHit] = true
                         else
                             str = false
                             DrawItemInfo(entityHit)
                         end
                     elseif flag == 2^8 then
-                        if Config.TrackEntities == 1 then
+                        if Config.TrackFoliage == 1 then
                             foliageToDraw[entityHit] = true
                         else
                             str = false
@@ -149,9 +187,11 @@ Citizen.CreateThread(function()
 end)
 
 function LoadModel(model)
-    while not HasModelLoaded(model) do
+    local attempts = 0
+    while attempts < 250 and not HasModelLoaded(model) do
         RequestModel(model)
         Citizen.Wait(100)
+        attempts = attempts + 1
     end
 end
 
@@ -204,6 +244,21 @@ function DrawTrackedInfo()
     end
 end
 
+function GetHashName(hash)
+    if HASH_OBJECTS[hash] then
+        return HASH_OBJECTS[hash]
+    end
+    if HASH_PEDS[hash] then
+        return HASH_PEDS[hash]
+    end
+    if HASH_PROVISIONS[hash] then
+        return HASH_PROVISIONS[hash]
+    end
+    if HASH_VEHICLES[hash] then
+        return HASH_VEHICLES[hash]
+    end
+end
+
 function DrawEntityInfo(entity)
     local eCoords = GetEntityCoords(entity)
     -- Draw Location on Screen
@@ -213,13 +268,12 @@ function DrawEntityInfo(entity)
     ecy = Floor(ecy * 100) / 100.0
     local str = "ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
-    if not HASH_PEDS[model_hash]  then
+    local model_name = GetHashName(model_hash)
+    if not model_name  then
         str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
     else
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-    end
-    if HASH_PEDS[model_hash] then
-        str = str .. HASH_PEDS[model_hash] .. "\n"
+        str = str .. model_name .. "\n"
     end
     str = str .. "MetapedType: " .. tostring(Citizen.InvokeNative(0xEC9A1261BF0CE510, entity))
     str = str .. " | PedType: " .. tostring(GetPedType(entity))
@@ -248,13 +302,12 @@ function DrawItemInfo(entity)
     ecy = Floor(ecy * 100) / 100.0
     local str = "[16] ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
-    if not HASH_OBJECTS[model_hash]  then
+    local model_name = GetHashName(model_hash)
+    if not model_name  then
         str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
     else
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-    end
-    if HASH_OBJECTS[model_hash] then
-        str = str .. HASH_OBJECTS[model_hash] .. "\n"
+        str = str .. model_name .. "\n"
     end
     str = str .. "Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
     local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
@@ -278,7 +331,14 @@ function DrawFoliageInfo(entity)
     ecx = Floor(ecx * 100) / 100.0
     ecy = Floor(ecy * 100) / 100.0
     local str = "[256] ID: " .. tostring(entity)
-    str = str .. " | Model: " .. tostring(GetEntityModel(entity)) .. "\n"
+    local model_hash = GetEntityModel(entity)
+    local model_name = GetHashName(model_hash)
+    if not model_name  then
+        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
+    else
+        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
+        str = str .. model_name .. "\n"
+    end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
 
@@ -291,13 +351,12 @@ function DrawVehicleInfo(entity)
     ecy = Floor(ecy * 100) / 100.0
     local str = "[2] ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
-    if not HASH_VEHICLES[model_hash]  then
+    local model_name = GetHashName(model_hash)
+    if not model_name  then
         str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
     else
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-    end
-    if HASH_VEHICLES[model_hash] then
-        str = str .. HASH_VEHICLES[model_hash] .. "\n"
+        str = str .. model_name .. "\n"
     end
     DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
 end
@@ -312,6 +371,31 @@ end
 --- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
 ---
 
+RegisterCommand("swap", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        print(args[1])
+        print(args[2])
+        local hashStart = "HASH_"
+        if args[1]:sub(1, #hashStart) == hashStart then
+            local hashName = GetTextSubstring(args[1], 5, GetLengthOfLiteralString(args[1]))
+            args[1] = GetHashKey(hashName)
+        end
+        if args[2]:sub(1, #hashStart) == hashStart then
+            local hashName = GetTextSubstring(args[2], 5, GetLengthOfLiteralString(args[2]))
+            args[2] = GetHashKey(hashName)
+        end
+        local player = PlayerPedId()
+        local coords = GetEntityCoords(player)
+        LoadModel(args[2])
+        Citizen.InvokeNative(0x10B2218320B6F5AC, coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+        print("Swapped " .. args[1] .. " for " .. args[2])
+        Citizen.Wait(2500)
+        Citizen.InvokeNative(0x824E1C26A14CB817 , coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+        print("Removed swap of " .. args[1] .. " for " .. args[2])
+        SetModelAsNoLongerNeeded(args[2])
+    end)
+end)
+
 RegisterCommand("native", function(source, args, rawCommand)
     if args[1] == nil then
         print("Please specify a function to call")
@@ -325,6 +409,12 @@ RegisterCommand("native", function(source, args, rawCommand)
                 table.insert(args2, GetHashKey(hashName))
             elseif v == "PLAYER_ID" then
                 table.insert(args2, GetPlayerPed())
+            elseif v == "PLAYER_COORD" then
+                local player = PlayerPedId()
+                local coords = GetEntityCoords(player)
+                table.insert(args2, coords.x)
+                table.insert(args2, coords.y)
+                table.insert(args2, coords.z)
             elseif v == "true" then
                 table.insert(args2, true)
             elseif v == "false" then

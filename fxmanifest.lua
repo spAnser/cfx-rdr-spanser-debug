@@ -9,3 +9,11 @@ client_scripts {
     'hashes/hash_vehicles.lua',
     'client/cl_main.lua',
 }
+files {
+    'html/css/style.css',
+    'html/fonts/crock.ttf',
+    'html/js/main.js',
+    'html/js/vue.min.js',
+    'html/ui.html',
+}
+ui_page "html/ui.html"

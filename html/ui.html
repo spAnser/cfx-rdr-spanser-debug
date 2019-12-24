@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>spAnser Debug Menu</title>
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:light,regular,medium,thin,italic,mediumitalic,bold" title="roboto">
+    </head>
+    <body>
+        <div id="app">
+            <ul v-if="tracking">
+                <li v-for="tracked, item in trackingItems" key="item" @click="toggle(item)">
+                    Track {{ item }}: <span :class="{ on : tracked, off : !tracked }">{{ tracked ? 'on' : 'off' }}</span></p>
+                </li>
+            </ul>
+        </div>
+    </body>
+
+    <script type="text/javascript" src="js/vue.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</html>

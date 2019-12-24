@@ -12,6 +12,8 @@ Displays Coordinates, Heading (including compass directions) and Time in the bot
 
 `spawn` can be used to spawn a ped
 
+`swap` can be used to quick swap models in a radius around player. Model is only swapped for a few seconds but is helpful for finding possible model names.
+
 `native` can be used to run native commands fairly easily from in game.
 
 So if you wanted to give yourself a Pump Shotgun with the native command you can run:  
@@ -23,6 +25,8 @@ This will automatically look up hashes if the string starts with `HASH_`. `PLAYE
 Lastly this can either display info of surrounding entities or track them as you come into contact with them based on the Config setting, tracking by default.
 
 `clear_tracking` can be used to clear all currently tracked IDs.
+
+You can disable tracking on specific things near the map. Use `]`, right bracket, to allow clicking to toggle the options. Use `Esc` to close focus.
 
 ![Entity Info](_screenshots/entity-info.png)
 ![Entity Info 2](_screenshots/entity-info-2.png)
