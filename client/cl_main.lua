@@ -28,11 +28,11 @@ Citizen.CreateThread(function()
         local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
         if HASH_PEDS[carriedEntityModel] then
             local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7)
-            DrawTxt("Carrying: " .. HASH_PEDS[carriedEntityModel], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+            DrawTxt("Carrying: " .. carriedEntity .. " | " .. HASH_PEDS[carriedEntityModel], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
         end
         if HASH_PROVISIONS[carriedEntityHash] then
             local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.75)
-            DrawTxt("Carrying: " .. HASH_PROVISIONS[carriedEntityHash], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+            DrawTxt("Carrying: " .. carriedEntity .. " | "  .. HASH_PROVISIONS[carriedEntityHash], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
         end
 
         -- Draw Lightning Strike/Spawn Location
