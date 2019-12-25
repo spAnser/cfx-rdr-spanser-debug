@@ -190,11 +190,12 @@ end)
 
 function LoadModel(model)
     local attempts = 0
-    while attempts < 25 and not HasModelLoaded(model) do
+    while attempts < 100 and not HasModelLoaded(model) do
         RequestModel(model)
-        Citizen.Wait(100)
+        Citizen.Wait(10)
         attempts = attempts + 1
     end
+    return IsModelValid(model)
 end
 
 function GetStatusText(status)
@@ -373,6 +374,57 @@ end
 --- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
 ---
 
+RegisterCommand("model_test", function(source, args, rawCommand)
+    if args[1] == nil then
+        print("Please provide a model prefix for testing")
+    else
+        Citizen.CreateThread(function()
+            local suffixes = {
+                '',
+                '001x', '002x', '003x', '004x', '005x', '006x', '007x', '008x', '009x',
+                '011x', '012x', '013x', '014x', '015x', '016x', '017x', '018x', '019x',
+                '021x', '022x', '023x', '024x', '025x', '026x', '027x', '028x', '029x',
+                '031x', '032x', '033x', '034x', '035x', '036x', '037x', '038x', '039x',
+                '041x', '042x', '043x', '044x', '045x', '046x', '047x', '048x', '049x',
+                '051x', '052x', '053x', '054x', '055x', '056x', '057x', '058x', '059x',
+                '061x', '062x', '063x', '064x', '065x', '066x', '067x', '068x', '069x',
+                '071x', '072x', '073x', '074x', '075x', '076x', '077x', '078x', '079x',
+                '081x', '082x', '083x', '084x', '085x', '086x', '087x', '088x', '089x',
+                '091x', '092x', '093x', '094x', '095x', '096x', '097x', '098x', '099x',
+                '101x', '102x', '103x', '104x', '105x', '106x', '107x', '108x', '109x',
+                '111x', '112x', '113x', '114x', '115x', '116x', '117x', '118x', '119x',
+                '00x', '01x', '02x', '03x', '04x', '05x', '06x', '07x', '08x', '09x',
+                '10x', '11x', '12x', '13x', '14x', '15x', '16x', '17x', '18x', '19x',
+                '20x', '21x', '22x', '23x', '24x', '25x', '26x', '27x', '28x', '29x',
+                '30x', '31x', '32x', '33x', '34x', '35x', '36x', '37x', '38x', '39x',
+                '40x', '41x', '42x', '43x', '44x', '45x', '46x', '47x', '48x', '49x',
+                '50x', '51x', '52x', '53x', '54x', '55x', '56x', '57x', '58x', '59x',
+                '60x', '61x', '62x', '63x', '64x', '65x', '66x', '67x', '68x', '69x',
+                '70x', '71x', '72x', '73x', '74x', '75x', '76x', '77x', '78x', '79x',
+                '80x', '81x', '82x', '83x', '84x', '85x', '86x', '87x', '88x', '89x',
+                '90x', '91x', '92x', '93x', '94x', '95x', '96x', '97x', '98x', '99x',
+                '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
+                '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
+                '40', '41', '42', '43', '44', '45', '46', '47', '48', '49',
+                '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
+                '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
+                '70', '71', '72', '73', '74', '75', '76', '77', '78', '79',
+                '80', '81', '82', '83', '84', '85', '86', '87', '88', '89',
+                '90', '91', '92', '93', '94', '95', '96', '97', '98', '99',
+            }
+            for k, suffix in pairs(suffixes) do
+                local model_hash = GetHashKey(args[1] .. suffix)
+                local model_valid = IsModelValid(model_hash)
+                if model_valid then
+                    print(args[1] .. suffix .. " is valid")
+                end
+            end
+        end)
+    end
+end)
+
 RegisterCommand("swap", function(source, args, rawCommand)
     if args[1] == nil or args[2] == nil then
         print("Please provide to models for swapping")
@@ -393,13 +445,17 @@ RegisterCommand("swap", function(source, args, rawCommand)
             end
             local player = PlayerPedId()
             local coords = GetEntityCoords(player)
-            LoadModel(args[2])
-            Citizen.InvokeNative(0x10B2218320B6F5AC, coords.x, coords.y, coords.z, 10.0, args[1], args[2])
-            print("Swapped " .. args[1] .. " for " .. args[2])
-            Citizen.Wait(2500)
-            Citizen.InvokeNative(0x824E1C26A14CB817 , coords.x, coords.y, coords.z, 10.0, args[1], args[2])
-            print("Removed swap of " .. args[1] .. " for " .. args[2])
-            SetModelAsNoLongerNeeded(args[2])
+            local model_valid = LoadModel(args[2])
+            if model_valid then
+                Citizen.InvokeNative(0x10B2218320B6F5AC, coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+                print("Swapped " .. args[1] .. " for " .. args[2])
+                Citizen.Wait(2500)
+                Citizen.InvokeNative(0x824E1C26A14CB817 , coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+                print("Removed swap of " .. args[1] .. " for " .. args[2])
+                SetModelAsNoLongerNeeded(args[2])
+            else
+                print("Model not valid")
+            end
         end)
     end
 end)
