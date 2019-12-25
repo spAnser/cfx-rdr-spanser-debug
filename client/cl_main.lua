@@ -374,7 +374,7 @@ end
 --- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
 ---
 
-RegisterCommand("model_test", function(source, args, rawCommand)
+RegisterCommand("model_search", function(source, args, rawCommand)
     if args[1] == nil then
         print("Please provide a model prefix for testing")
     else
@@ -419,6 +419,31 @@ RegisterCommand("model_test", function(source, args, rawCommand)
                 local model_valid = IsModelValid(model_hash)
                 if model_valid then
                     print(args[1] .. suffix .. " is valid " .. model_hash)
+                end
+            end
+            for k, suffix in pairs(suffixes) do
+                local model_hash = GetHashKey(args[1] .. "_" .. suffix)
+                local model_valid = IsModelValid(model_hash)
+                if model_valid then
+                    print(args[1] .. "_" .. suffix .. " is valid " .. model_hash)
+                end
+            end
+            local pStart = "P_"
+            if args[1]:sub(1, #pStart) == pStart then
+                args[1] = ("^" .. args[1]):gsub("%^P_", "P_CS_")
+                for k, suffix in pairs(suffixes) do
+                    local model_hash = GetHashKey(args[1] .. suffix)
+                    local model_valid = IsModelValid(model_hash)
+                    if model_valid then
+                        print(args[1] .. suffix .. " is valid " .. model_hash)
+                    end
+                end
+                for k, suffix in pairs(suffixes) do
+                    local model_hash = GetHashKey(args[1] .. "_" .. suffix)
+                    local model_valid = IsModelValid(model_hash)
+                    if model_valid then
+                        print(args[1] .. "_" .. suffix .. " is valid " .. model_hash)
+                    end
                 end
             end
         end)
