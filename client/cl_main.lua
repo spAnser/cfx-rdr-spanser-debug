@@ -374,32 +374,34 @@ end
 ---
 
 RegisterCommand("swap", function(source, args, rawCommand)
-    Citizen.CreateThread(function()
-        print(args[1])
-        print(args[2])
-        local hashStart = "HASH_"
-        if args[1]:sub(1, #hashStart) == hashStart then
-            local hashName = GetTextSubstring(args[1], 5, GetLengthOfLiteralString(args[1]))
-            args[1] = GetHashKey(hashName)
-        elseif not (nil == tonumber(args[1])) then
-            args[1] = tonumber(args[1])
-        end
-        if args[2]:sub(1, #hashStart) == hashStart then
-            local hashName = GetTextSubstring(args[2], 5, GetLengthOfLiteralString(args[2]))
-            args[2] = GetHashKey(hashName)
-        elseif not (nil == tonumber(args[2])) then
-            args[2] = tonumber(args[2])
-        end
-        local player = PlayerPedId()
-        local coords = GetEntityCoords(player)
-        LoadModel(args[2])
-        Citizen.InvokeNative(0x10B2218320B6F5AC, coords.x, coords.y, coords.z, 10.0, args[1], args[2])
-        print("Swapped " .. args[1] .. " for " .. args[2])
-        Citizen.Wait(2500)
-        Citizen.InvokeNative(0x824E1C26A14CB817 , coords.x, coords.y, coords.z, 10.0, args[1], args[2])
-        print("Removed swap of " .. args[1] .. " for " .. args[2])
-        SetModelAsNoLongerNeeded(args[2])
-    end)
+    if args[1] == nil or args[2] == nil then
+        print("Please provide to models for swapping")
+    else
+        Citizen.CreateThread(function()
+            local hashStart = "HASH_"
+            if args[1]:sub(1, #hashStart) == hashStart then
+                local hashName = GetTextSubstring(args[1], 5, GetLengthOfLiteralString(args[1]))
+                args[1] = GetHashKey(hashName)
+            elseif not (nil == tonumber(args[1])) then
+                args[1] = tonumber(args[1])
+            end
+            if args[2]:sub(1, #hashStart) == hashStart then
+                local hashName = GetTextSubstring(args[2], 5, GetLengthOfLiteralString(args[2]))
+                args[2] = GetHashKey(hashName)
+            elseif not (nil == tonumber(args[2])) then
+                args[2] = tonumber(args[2])
+            end
+            local player = PlayerPedId()
+            local coords = GetEntityCoords(player)
+            LoadModel(args[2])
+            Citizen.InvokeNative(0x10B2218320B6F5AC, coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+            print("Swapped " .. args[1] .. " for " .. args[2])
+            Citizen.Wait(2500)
+            Citizen.InvokeNative(0x824E1C26A14CB817 , coords.x, coords.y, coords.z, 10.0, args[1], args[2])
+            print("Removed swap of " .. args[1] .. " for " .. args[2])
+            SetModelAsNoLongerNeeded(args[2])
+        end)
+    end
 end)
 
 RegisterCommand("native", function(source, args, rawCommand)
