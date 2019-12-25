@@ -14,6 +14,8 @@ Displays Coordinates, Heading (including compass directions) and Time in the bot
 
 `swap` can be used to quick swap models in a radius around player. Model is only swapped for a few seconds but is helpful for finding possible model names.
 
+`model_test` can be used to find valid models quickly when they are numbered. It tests a few known numbering systems as a suffix to the input value.
+
 `native` can be used to run native commands fairly easily from in game.
 
 So if you wanted to give yourself a Pump Shotgun with the native command you can run:  
