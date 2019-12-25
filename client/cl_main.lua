@@ -418,7 +418,7 @@ RegisterCommand("model_test", function(source, args, rawCommand)
                 local model_hash = GetHashKey(args[1] .. suffix)
                 local model_valid = IsModelValid(model_hash)
                 if model_valid then
-                    print(args[1] .. suffix .. " is valid")
+                    print(args[1] .. suffix .. " is valid " .. model_hash)
                 end
             end
         end)
