@@ -583,6 +583,29 @@ RegisterCommand("delete_entity", function(source, args, rawCommand)
     end)
 end)
 
+function SetEntityModel(entity, model)
+    entity = tonumber(entity)
+    if tonumber(model) == nil then
+        model = GetHashKey(model)
+    end
+    if IsModelValid(model) then
+        local entityCoords = GetEntityCoords(entity)
+        local entityModel = GetEntityModel(entity)
+        LoadModel(model)
+        CreateModelSwap(entityCoords.x, entityCoords.y, entityCoords.z, 0.0, entityModel, model)
+    end
+end
+
+RegisterCommand("set_entity_model", function(source, args, rawCommand)
+    if not args[1] or not args[2] then
+        print("Specify an entity and model")
+    else
+        Citizen.CreateThread(function()
+            SetEntityModel(table.unpack(args))
+        end)
+    end
+end)
+
 function headingDir(entity)
     local hd = GetEntityHeading(entity)
     if hd < 22.5 then
