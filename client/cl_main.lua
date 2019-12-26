@@ -484,9 +484,13 @@ RegisterCommand("model_search", function(source, args, rawCommand)
     else
         ModelSearch(args[1])
         ModelSearch('P_' .. args[1])
+        ModelSearch('P_' .. args[1] .. '_')
         ModelSearch('P_CS_' .. args[1])
+        ModelSearch('P_CS_' .. args[1] .. '_')
         ModelSearch('S_' .. args[1])
+        ModelSearch('S_' .. args[1] .. '_')
         ModelSearch('S_INV_' .. args[1])
+        ModelSearch('S_INV_' .. args[1] .. '_')
     end
 end)
 
@@ -641,6 +645,8 @@ function SetEntityModel(entity, model)
         local entityModel = GetEntityModel(entity)
         LoadModel(model)
         CreateModelSwap(entityCoords.x, entityCoords.y, entityCoords.z, 0.0, entityModel, model)
+    else
+        print('Invalid Model')
     end
 end
 
