@@ -248,8 +248,8 @@ function DrawTrackedInfo()
 end
 
 function GetHashName(hash)
-    if HASH_OBJECTS[hash] then
-        return HASH_OBJECTS[hash]
+    if HASH_MODELS[hash] then
+        return HASH_MODELS[hash]
     end
     if HASH_PEDS[hash] then
         return HASH_PEDS[hash]
@@ -374,79 +374,119 @@ end
 --- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
 ---
 
+function GetHashKeyIfValid(model_name)
+    local model_hash = GetHashKey(model_name)
+    local model_valid = IsModelValid(model_hash)
+    if model_valid then
+        return model_hash
+    else
+        return false
+    end
+end
+
+function PrintValidModel(model_name)
+    local model_hash = GetHashKeyIfValid(model_name)
+    if model_hash then
+        if HASH_MODELS[model_hash] then
+            print(model_name .. " is valid " .. model_hash)
+        else
+            print('NEW: ' .. model_name .. " is valid " .. model_hash)
+        end
+        return true
+    end
+end
+
+function TestModelSuffix(model_base_name, suffix)
+    local model_name
+    model_name = model_base_name .. suffix
+    local validA = PrintValidModel(model_name)
+    model_name = model_name .. 'X'
+    local validB = PrintValidModel(model_name)
+    model_name = model_base_name .. suffix .. '_L'
+    local validC = PrintValidModel(model_name)
+    model_name = model_base_name .. suffix .. '_R'
+    local validD = PrintValidModel(model_name)
+    model_name = model_base_name .. suffix .. '_LG'
+    local validE = PrintValidModel(model_name)
+    model_name = model_base_name .. suffix .. '_MD'
+    local validF = PrintValidModel(model_name)
+    model_name = model_base_name .. suffix .. '_SM'
+    local validG = PrintValidModel(model_name)
+    model_name = model_base_name .. 'LRG' .. suffix
+    local validH = PrintValidModel(model_name)
+    model_name = model_name .. 'X'
+    local validI = PrintValidModel(model_name)
+    model_name = model_base_name .. 'MED' .. suffix
+    local validJ = PrintValidModel(model_name)
+    model_name = model_name .. 'X'
+    local validK = PrintValidModel(model_name)
+    model_name = model_base_name .. 'SML' .. suffix
+    local validL = PrintValidModel(model_name)
+    model_name = model_name .. 'X'
+    local validM = PrintValidModel(model_name)
+    if validA or validB or validC or validD or validE or validF or validG or validH or validI or validJ or validK or validL or validM then
+    return true
+    else
+        return false
+    end
+end
+
+function ModelSearch(name)
+        Citizen.CreateThread(function()
+        local letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y', 'Z' }
+        local model_name = ''
+        TestModelSuffix(name, '')
+        local countSinceLastValid = 0
+        local validA, validB, validC, validD, validE, validF
+        for i = 1, 999 do
+            countSinceLastValid = countSinceLastValid + 1
+            -- Don't keep counting higher if there is no lower number values.
+            if countSinceLastValid > 10 then
+                break
+            end
+            if i < 10 then
+                validA = TestModelSuffix(name, i)
+            end
+            if i < 100 then
+                validB = TestModelSuffix(name, string.format("%02d", i))
+            end
+            validC = TestModelSuffix(name, string.format("%03d", i))
+            -- Letters
+            local validLetter = false
+            local countSinceLastValidLetter = 0
+            for l, letter in pairs(letters) do
+                countSinceLastValid = countSinceLastValid + 1
+                -- Don't keep counting higher if there is no lower number values.
+                if countSinceLastValid > 2 then
+                    break
+                end
+                if i < 10 then
+                    validD = TestModelSuffix(name, i .. letter)
+            end
+                if i < 100 then
+                    validE = TestModelSuffix(name, string.format("%02d", i) .. letter)
+                end
+                validF = TestModelSuffix(name, string.format("%03d", i) .. letter)
+                if validD or validE or validF then
+                    countSinceLastValid = 0
+            end
+                    end
+            if validA or validB or validC or validD or validE or validF then
+                countSinceLastValid = 0
+                end
+                    end
+    end)
+                end
+
 RegisterCommand("model_search", function(source, args, rawCommand)
     if args[1] == nil then
         print("Please provide a model prefix for testing")
     else
-        Citizen.CreateThread(function()
-            local suffixes = {
-                '',
-                '001X', '002X', '003X', '004X', '005X', '006X', '007X', '008X', '009X',
-                '011X', '012X', '013X', '014X', '015X', '016X', '017X', '018X', '019X',
-                '021X', '022X', '023X', '024X', '025X', '026X', '027X', '028X', '029X',
-                '031X', '032X', '033X', '034X', '035X', '036X', '037X', '038X', '039X',
-                '041X', '042X', '043X', '044X', '045X', '046X', '047X', '048X', '049X',
-                '051X', '052X', '053X', '054X', '055X', '056X', '057X', '058X', '059X',
-                '061X', '062X', '063X', '064X', '065X', '066X', '067X', '068X', '069X',
-                '071X', '072X', '073X', '074X', '075X', '076X', '077X', '078X', '079X',
-                '081X', '082X', '083X', '084X', '085X', '086X', '087X', '088X', '089X',
-                '091X', '092X', '093X', '094X', '095X', '096X', '097X', '098X', '099X',
-                '101X', '102X', '103X', '104X', '105X', '106X', '107X', '108X', '109X',
-                '111X', '112X', '113X', '114X', '115X', '116X', '117X', '118X', '119X',
-                '00X', '01X', '02X', '03X', '04X', '05X', '06X', '07X', '08X', '09X',
-                '10X', '11X', '12X', '13X', '14X', '15X', '16X', '17X', '18X', '19X',
-                '20X', '21X', '22X', '23X', '24X', '25X', '26X', '27X', '28X', '29X',
-                '30X', '31X', '32X', '33X', '34X', '35X', '36X', '37X', '38X', '39X',
-                '40X', '41X', '42X', '43X', '44X', '45X', '46X', '47X', '48X', '49X',
-                '50X', '51X', '52X', '53X', '54X', '55X', '56X', '57X', '58X', '59X',
-                '60X', '61X', '62X', '63X', '64X', '65X', '66X', '67X', '68X', '69X',
-                '70X', '71X', '72X', '73X', '74X', '75X', '76X', '77X', '78X', '79X',
-                '80X', '81X', '82X', '83X', '84X', '85X', '86X', '87X', '88X', '89X',
-                '90X', '91X', '92X', '93X', '94X', '95X', '96X', '97X', '98X', '99X',
-                '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
-                '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-                '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
-                '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
-                '40', '41', '42', '43', '44', '45', '46', '47', '48', '49',
-                '50', '51', '52', '53', '54', '55', '56', '57', '58', '59',
-                '60', '61', '62', '63', '64', '65', '66', '67', '68', '69',
-                '70', '71', '72', '73', '74', '75', '76', '77', '78', '79',
-                '80', '81', '82', '83', '84', '85', '86', '87', '88', '89',
-                '90', '91', '92', '93', '94', '95', '96', '97', '98', '99',
-            }
-            for k, suffix in pairs(suffixes) do
-                local model_hash = GetHashKey(args[1] .. suffix)
-                local model_valid = IsModelValid(model_hash)
-                if model_valid then
-                    print(args[1] .. suffix .. " is valid " .. model_hash)
-                end
-            end
-            for k, suffix in pairs(suffixes) do
-                local model_hash = GetHashKey(args[1] .. "_" .. suffix)
-                local model_valid = IsModelValid(model_hash)
-                if model_valid then
-                    print(args[1] .. "_" .. suffix .. " is valid " .. model_hash)
-                end
-            end
-            local pStart = "P_"
-            if args[1]:sub(1, #pStart) == pStart then
-                args[1] = ("^" .. args[1]):gsub("%^P_", "P_CS_")
-                for k, suffix in pairs(suffixes) do
-                    local model_hash = GetHashKey(args[1] .. suffix)
-                    local model_valid = IsModelValid(model_hash)
-                    if model_valid then
-                        print(args[1] .. suffix .. " is valid " .. model_hash)
-                    end
-                end
-                for k, suffix in pairs(suffixes) do
-                    local model_hash = GetHashKey(args[1] .. "_" .. suffix)
-                    local model_valid = IsModelValid(model_hash)
-                    if model_valid then
-                        print(args[1] .. "_" .. suffix .. " is valid " .. model_hash)
-                    end
-                end
-            end
-        end)
+        ModelSearch(args[1])
+        ModelSearch('P_' .. args[1])
+        ModelSearch('P_CS_' .. args[1])
+        ModelSearch('S_' .. args[1])
+        ModelSearch('S_INV_' .. args[1])
     end
 end)
 
