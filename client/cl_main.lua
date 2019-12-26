@@ -381,28 +381,28 @@ RegisterCommand("model_search", function(source, args, rawCommand)
         Citizen.CreateThread(function()
             local suffixes = {
                 '',
-                '001x', '002x', '003x', '004x', '005x', '006x', '007x', '008x', '009x',
-                '011x', '012x', '013x', '014x', '015x', '016x', '017x', '018x', '019x',
-                '021x', '022x', '023x', '024x', '025x', '026x', '027x', '028x', '029x',
-                '031x', '032x', '033x', '034x', '035x', '036x', '037x', '038x', '039x',
-                '041x', '042x', '043x', '044x', '045x', '046x', '047x', '048x', '049x',
-                '051x', '052x', '053x', '054x', '055x', '056x', '057x', '058x', '059x',
-                '061x', '062x', '063x', '064x', '065x', '066x', '067x', '068x', '069x',
-                '071x', '072x', '073x', '074x', '075x', '076x', '077x', '078x', '079x',
-                '081x', '082x', '083x', '084x', '085x', '086x', '087x', '088x', '089x',
-                '091x', '092x', '093x', '094x', '095x', '096x', '097x', '098x', '099x',
-                '101x', '102x', '103x', '104x', '105x', '106x', '107x', '108x', '109x',
-                '111x', '112x', '113x', '114x', '115x', '116x', '117x', '118x', '119x',
-                '00x', '01x', '02x', '03x', '04x', '05x', '06x', '07x', '08x', '09x',
-                '10x', '11x', '12x', '13x', '14x', '15x', '16x', '17x', '18x', '19x',
-                '20x', '21x', '22x', '23x', '24x', '25x', '26x', '27x', '28x', '29x',
-                '30x', '31x', '32x', '33x', '34x', '35x', '36x', '37x', '38x', '39x',
-                '40x', '41x', '42x', '43x', '44x', '45x', '46x', '47x', '48x', '49x',
-                '50x', '51x', '52x', '53x', '54x', '55x', '56x', '57x', '58x', '59x',
-                '60x', '61x', '62x', '63x', '64x', '65x', '66x', '67x', '68x', '69x',
-                '70x', '71x', '72x', '73x', '74x', '75x', '76x', '77x', '78x', '79x',
-                '80x', '81x', '82x', '83x', '84x', '85x', '86x', '87x', '88x', '89x',
-                '90x', '91x', '92x', '93x', '94x', '95x', '96x', '97x', '98x', '99x',
+                '001X', '002X', '003X', '004X', '005X', '006X', '007X', '008X', '009X',
+                '011X', '012X', '013X', '014X', '015X', '016X', '017X', '018X', '019X',
+                '021X', '022X', '023X', '024X', '025X', '026X', '027X', '028X', '029X',
+                '031X', '032X', '033X', '034X', '035X', '036X', '037X', '038X', '039X',
+                '041X', '042X', '043X', '044X', '045X', '046X', '047X', '048X', '049X',
+                '051X', '052X', '053X', '054X', '055X', '056X', '057X', '058X', '059X',
+                '061X', '062X', '063X', '064X', '065X', '066X', '067X', '068X', '069X',
+                '071X', '072X', '073X', '074X', '075X', '076X', '077X', '078X', '079X',
+                '081X', '082X', '083X', '084X', '085X', '086X', '087X', '088X', '089X',
+                '091X', '092X', '093X', '094X', '095X', '096X', '097X', '098X', '099X',
+                '101X', '102X', '103X', '104X', '105X', '106X', '107X', '108X', '109X',
+                '111X', '112X', '113X', '114X', '115X', '116X', '117X', '118X', '119X',
+                '00X', '01X', '02X', '03X', '04X', '05X', '06X', '07X', '08X', '09X',
+                '10X', '11X', '12X', '13X', '14X', '15X', '16X', '17X', '18X', '19X',
+                '20X', '21X', '22X', '23X', '24X', '25X', '26X', '27X', '28X', '29X',
+                '30X', '31X', '32X', '33X', '34X', '35X', '36X', '37X', '38X', '39X',
+                '40X', '41X', '42X', '43X', '44X', '45X', '46X', '47X', '48X', '49X',
+                '50X', '51X', '52X', '53X', '54X', '55X', '56X', '57X', '58X', '59X',
+                '60X', '61X', '62X', '63X', '64X', '65X', '66X', '67X', '68X', '69X',
+                '70X', '71X', '72X', '73X', '74X', '75X', '76X', '77X', '78X', '79X',
+                '80X', '81X', '82X', '83X', '84X', '85X', '86X', '87X', '88X', '89X',
+                '90X', '91X', '92X', '93X', '94X', '95X', '96X', '97X', '98X', '99X',
                 '00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
                 '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
                 '20', '21', '22', '23', '24', '25', '26', '27', '28', '29',
@@ -455,19 +455,8 @@ RegisterCommand("swap", function(source, args, rawCommand)
         print("Please provide to models for swapping")
     else
         Citizen.CreateThread(function()
-            local hashStart = "HASH_"
-            if args[1]:sub(1, #hashStart) == hashStart then
-                local hashName = GetTextSubstring(args[1], 5, GetLengthOfLiteralString(args[1]))
-                args[1] = GetHashKey(hashName)
-            elseif not (nil == tonumber(args[1])) then
-                args[1] = tonumber(args[1])
-            end
-            if args[2]:sub(1, #hashStart) == hashStart then
-                local hashName = GetTextSubstring(args[2], 5, GetLengthOfLiteralString(args[2]))
-                args[2] = GetHashKey(hashName)
-            elseif not (nil == tonumber(args[2])) then
-                args[2] = tonumber(args[2])
-            end
+            args[1] = ConvertArg(args[1])
+            args[2] = ConvertArg(args[2])
             local player = PlayerPedId()
             local coords = GetEntityCoords(player)
             local model_valid = LoadModel(args[2])
@@ -485,6 +474,28 @@ RegisterCommand("swap", function(source, args, rawCommand)
     end
 end)
 
+function ConvertArg(arg)
+    local hashStart = "HASH_"
+    if arg:sub(1, #hashStart) == hashStart then
+        local hashName = GetTextSubstring(arg, 5, GetLengthOfLiteralString(arg))
+        return GetHashKey(hashName)
+    elseif arg == "PLAYER_ID" then
+        return GetPlayerPed()
+    elseif arg == "PLAYER_COORD" then
+        local player = PlayerPedId()
+        local coords = GetEntityCoords(player)
+        return { coords.x, coords.y, coords.z }
+    elseif arg == "true" then
+        return true
+    elseif arg == "false" then
+        return false
+    elseif not (nil == tonumber(arg)) then
+        return tonumber(arg)
+    else
+        return arg
+    end
+end
+
 RegisterCommand("native", function(source, args, rawCommand)
     if args[1] == nil then
         print("Please specify a function to call")
@@ -492,24 +503,11 @@ RegisterCommand("native", function(source, args, rawCommand)
         local args2 = {}
 
         for k, v in pairs(args) do
-            local hashStart = "HASH_"
-            if v:sub(1, #hashStart) == hashStart then
-                local hashName = GetTextSubstring(v, 5, GetLengthOfLiteralString(v))
-                table.insert(args2, GetHashKey(hashName))
-            elseif v == "PLAYER_ID" then
-                table.insert(args2, GetPlayerPed())
-            elseif v == "PLAYER_COORD" then
-                local player = PlayerPedId()
-                local coords = GetEntityCoords(player)
-                table.insert(args2, coords.x)
-                table.insert(args2, coords.y)
-                table.insert(args2, coords.z)
-            elseif v == "true" then
-                table.insert(args2, true)
-            elseif v == "false" then
-                table.insert(args2, false)
-            elseif not (nil == tonumber(v)) then
-                table.insert(args2, tonumber(v))
+            v = ConvertArg(v)
+            if type(v) == 'table' then
+                for key, value in pairs(v) do
+                    table.insert(args2, value)
+                end
             else
                 table.insert(args2, v)
             end
@@ -524,9 +522,19 @@ RegisterCommand("native", function(source, args, rawCommand)
 end)
 
 RegisterCommand("golden", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 0, 100) -- SetAttributeCoreValue
+        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 1, 100) -- SetAttributeCoreValue
+        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 2, 100) -- SetAttributeCoreValue
+        EnableAttributeOverpower(GetPlayerPed(), 0, 5000.0)
+        EnableAttributeOverpower(GetPlayerPed(), 1, 5000.0)
+        EnableAttributeOverpower(GetPlayerPed(), 2, 5000.0)
+        -- 0x103C2F885ABEB00B Is Attribute Overpowered
+        -- 0xF6A7C08DF2E28B28 Set Attribute Overpowered AMount
     Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 0, 5000.0)
     Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 1, 5000.0)
     Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 2, 5000.0)
+end)
 end)
 
 RegisterCommand("clear_tracking", function(source, args, rawCommand)
