@@ -4,7 +4,7 @@ Displays Coordinates, Heading (including compass directions) and Time in the bot
 
 ## Commands
 
-`golden` will set your outer bars to overpowered
+`golden` will set your cores and outer bars to overpowered
 
 `weather` can be used to quickly change the weather
 

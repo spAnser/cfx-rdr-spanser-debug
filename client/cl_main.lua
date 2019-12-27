@@ -668,10 +668,10 @@ end
 
 function TxtAtWorldCoord(x, y, z, txt, size, font)
     local s, sx, sy = GetScreenCoordFromWorldCoord(x, y ,z)
-    -- Rounding to prevent some jitter
-    sx = Floor(sx * 200) / 200.0
-    sy = Floor(sy * 200) / 200.0
-    DrawTxt(txt, sx, sy, size, true, 255, 255, 255, 255, true, font) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
+    if (sx > 0 and sx < 1) or (sy > 0 and sy < 1) then
+        local s, sx, sy = GetHudScreenPositionFromWorldPosition(x, y, z)
+        DrawTxt(txt, sx, sy, size, true, 255, 255, 255, 255, true, font) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
+    end
 end
 
 function DrawTxt(str, x, y, size, enableShadow, r, g, b, a, centre, font)
