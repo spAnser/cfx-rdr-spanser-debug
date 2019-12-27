@@ -441,7 +441,7 @@ function ModelSearch(name)
         for i = 1, 999 do
             countSinceLastValid = countSinceLastValid + 1
             -- Don't keep counting higher if there is no lower number values.
-            if countSinceLastValid > 10 then
+            if countSinceLastValid > 9 then
                 break
             end
             if i < 10 then
@@ -455,9 +455,9 @@ function ModelSearch(name)
             local validLetter = false
             local countSinceLastValidLetter = 0
             for l, letter in pairs(letters) do
-                countSinceLastValid = countSinceLastValid + 1
+                countSinceLastValidLetter = countSinceLastValidLetter + 1
                 -- Don't keep counting higher if there is no lower number values.
-                if countSinceLastValid > 2 then
+                if countSinceLastValidLetter > 2 then
                     break
                 end
                 if i < 10 then
@@ -468,7 +468,7 @@ function ModelSearch(name)
                 end
                 validF = TestModelSuffix(name, string.format("%03d", i) .. letter)
                 if validD or validE or validF then
-                    countSinceLastValid = 0
+                    countSinceLastValidLetter = 0
             end
                     end
             if validA or validB or validC or validD or validE or validF then
@@ -485,6 +485,8 @@ RegisterCommand("model_search", function(source, args, rawCommand)
         ModelSearch(args[1])
         ModelSearch('P_' .. args[1])
         ModelSearch('P_' .. args[1] .. '_')
+        ModelSearch('P_GEN_' .. args[1]) -- Double Check accuracy
+        ModelSearch('P_GEN_' .. args[1] .. '_') -- Double Check accuracy
         ModelSearch('P_CS_' .. args[1])
         ModelSearch('P_CS_' .. args[1] .. '_')
         ModelSearch('S_' .. args[1])
