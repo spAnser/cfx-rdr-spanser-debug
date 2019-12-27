@@ -1,4 +1,3 @@
-local lightningPrompt = 0
 local entitiesToDraw = {}
 local foliageToDraw = {}
 local itemsToDraw = {}
@@ -52,36 +51,26 @@ Citizen.CreateThread(function()
 
         DrawTrackedInfo()
 
-        -- Draw Player Location / Lightning Prompt Location
+        -- Draw Player Location / Spawn Location
         local player = GetPlayerPed()
         local pCoords = GetEntityCoords(player)
         local pDir = GetEntityHeading(player)
 
         -- Draw Player Location
-        local pc, pcx, pcy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.85)
-        -- Rounding to prevent some jitter
-        pcx = Floor(pcx * 100) / 100.0
-        pcy = Floor(pcy * 100) / 100.0
-        DrawTxt(player .."\n?", pcx, pcy, 0.2, true, 255, 255, 255, 255, true, 2)
+        TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.85, player .."\n?", 0.2, 2)
         local carriedEntity = Citizen.InvokeNative(0xD806CD2A4F2C2996, player)
         local carriedEntityModel = GetEntityModel(carriedEntity)
         local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
-        if HASH_PEDS[carriedEntityModel] then
-            local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7)
-            DrawTxt("Carrying: " .. carriedEntity .. " | " .. HASH_PEDS[carriedEntityModel], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
-        end
-        if HASH_PROVISIONS[carriedEntityHash] then
-            local ec, ecx, ecy = GetScreenCoordFromWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.75)
-            DrawTxt("Carrying: " .. carriedEntity .. " | "  .. HASH_PROVISIONS[carriedEntityHash], ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+        if carriedEntity then
+            TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.6, "Carrying: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or ""), 0.175, 1)
+            if carriedEntityHash then
+                TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7, "Carrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or ""), 0.175, 1)
+            end
         end
 
-        -- Draw Lightning Strike/Spawn Location
-        local strikeCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, -0.5)
-        local lc, lcx, lcy = GetScreenCoordFromWorldCoord(strikeCoords.x, strikeCoords.y, strikeCoords.z)
-        -- Rounding to prevent some jitter
-        lcx = Floor(lcx * 100) / 100.0
-        lcy = Floor(lcy * 100) / 100.0
-        DrawTxt("?", lcx, lcy, 0.2, true, 255, 255, 255, 255, false, 2) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
+        -- Draw Spawn Location
+        local spawnCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, -0.5)
+        TxtAtWorldCoord(spawnCoords.x, spawnCoords.y, spawnCoords.z, "?", 0.2, 2)
     end
 end)
 
@@ -97,8 +86,7 @@ Citizen.CreateThread(function()
         local shapeTest = StartShapeTestRay(coords.x, coords.y, coords.z, coords.x, coords.y, coords.z - 5.0, 1, 1)
         local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
         if hit > 0 then
-            local pc, pcx, pcy = GetScreenCoordFromWorldCoord(endCoords.x, endCoords.y, endCoords.z)
-            DrawTxt("Standing On: " .. tostring(entityHit), pcx, pcy, 0.15, true, 255, 255, 255, 255, true, 1)
+            TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, "Standing On: " .. tostring(entityHit), 0.15, 1)
         end
 
         -- World - Ground / Walls / Rocks
@@ -107,8 +95,7 @@ Citizen.CreateThread(function()
         local shapeTest = StartShapeTestRay(coords.x, coords.y, coords.z, coordsf.x, coordsf.y, coordsf.z, 1)
         local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
         if hit > 0 then
-            local pc, pcx, pcy = GetScreenCoordFromWorldCoord(endCoords.x, endCoords.y, endCoords.z)
-            DrawTxt("1: " .. tostring(entityHit), pcx, pcy, 0.3, true, 255, 255, 255, 255, true, 1)
+            TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, "1: " .. tostring(entityHit), 0.3, 1)
         end
 
         local flags = {
@@ -145,7 +132,6 @@ Citizen.CreateThread(function()
                 excludeEntity = entityHit
                 -- print(flag, rtnVal, hit, endCoords, surfaceNormal, entityHit)
                 if hit > 0 then
-                    local pc, pcx, pcy = GetScreenCoordFromWorldCoord(endCoords.x, endCoords.y, endCoords.z)
                     local str = flag .. ": " .. tostring(entityHit) .. "\n"
                     if flag == 2 then
                         if Config.TrackVehicles == 1 then
@@ -177,10 +163,7 @@ Citizen.CreateThread(function()
                         end
                     end
                     if str then
-                        -- Rounding to prevent some jitter
-                        pcx = Floor(pcx * 100) / 100.0
-                        pcy = Floor(pcy * 100) / 100.0
-                        DrawTxt(str, pcx, pcy, 0.2, true, 255, 255, 255, 255, false, 1)
+                        TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, str, 0.2, 1)
                     end
                 end
             end
@@ -263,12 +246,6 @@ function GetHashName(hash)
 end
 
 function DrawEntityInfo(entity)
-    local eCoords = GetEntityCoords(entity)
-    -- Draw Location on Screen
-    local ec, ecx, ecy = GetScreenCoordFromWorldCoord(eCoords.x, eCoords.y, eCoords.z)
-    -- Rounding to prevent some jitter
-    ecx = Floor(ecx * 100) / 100.0
-    ecy = Floor(ecy * 100) / 100.0
     local str = "ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
     local model_name = GetHashName(model_hash)
@@ -293,16 +270,11 @@ function DrawEntityInfo(entity)
     if HASH_PROVISIONS[provision_hash] then
         str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
-    DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+    local eCoords = GetEntityCoords(entity)
+    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
 function DrawItemInfo(entity)
-    local eCoords = GetEntityCoords(entity)
-    -- Draw Location on Screen
-    local ec, ecx, ecy = GetScreenCoordFromWorldCoord(eCoords.x, eCoords.y, eCoords.z)
-    -- Rounding to prevent some jitter
-    ecx = Floor(ecx * 100) / 100.0
-    ecy = Floor(ecy * 100) / 100.0
     local str = "[16] ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
     local model_name = GetHashName(model_hash)
@@ -323,16 +295,11 @@ function DrawItemInfo(entity)
     if HASH_PROVISIONS[provision_hash] then
         str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
-    DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+    local eCoords = GetEntityCoords(entity)
+    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
 function DrawFoliageInfo(entity)
-    local eCoords = GetEntityCoords(entity)
-    -- Draw Location on Screen
-    local ec, ecx, ecy = GetScreenCoordFromWorldCoord(eCoords.x, eCoords.y, eCoords.z)
-    -- Rounding to prevent some jitter
-    ecx = Floor(ecx * 100) / 100.0
-    ecy = Floor(ecy * 100) / 100.0
     local str = "[256] ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
     local model_name = GetHashName(model_hash)
@@ -342,16 +309,11 @@ function DrawFoliageInfo(entity)
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
         str = str .. model_name .. "\n"
     end
-    DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+    local eCoords = GetEntityCoords(entity)
+    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
 function DrawVehicleInfo(entity)
-    local eCoords = GetEntityCoords(entity)
-    -- Draw Location on Screen
-    local ec, ecx, ecy = GetScreenCoordFromWorldCoord(eCoords.x, eCoords.y, eCoords.z)
-    -- Rounding to prevent some jitter
-    ecx = Floor(ecx * 100) / 100.0
-    ecy = Floor(ecy * 100) / 100.0
     local str = "[2] ID: " .. tostring(entity)
     local model_hash = GetEntityModel(entity)
     local model_name = GetHashName(model_hash)
@@ -361,18 +323,9 @@ function DrawVehicleInfo(entity)
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
         str = str .. model_name .. "\n"
     end
-    DrawTxt(str, ecx, ecy, 0.2, true, 255, 255, 255, 255, true, 1)
+    local eCoords = GetEntityCoords(entity)
+    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
-
----
---- Entity Natives
---- 0x61914209C36EFDDB Entity Status? 3 on ground 4 picking up 5 carried 6 dropping
---- 0x96C638784DB4C815 Has a number when target is alive is false after target dies
---- 0xD21C7418C590BB40 -1 when alive 2 when dying / dead
---- 0xAAACB74442C1BED3 number increments every call
---- 0xC8CCDB712FBCBA92 Occluded? Visible on screen?
---- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
----
 
 function GetHashKeyIfValid(model_name)
     local model_hash = GetHashKey(model_name)
@@ -432,7 +385,7 @@ function TestModelSuffix(model_base_name, suffix)
 end
 
 function ModelSearch(name)
-        Citizen.CreateThread(function()
+    Citizen.CreateThread(function()
         local letters = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'Y', 'Z' }
         local model_name = ''
         TestModelSuffix(name, '')
@@ -462,21 +415,21 @@ function ModelSearch(name)
                 end
                 if i < 10 then
                     validD = TestModelSuffix(name, i .. letter)
-            end
+                end
                 if i < 100 then
                     validE = TestModelSuffix(name, string.format("%02d", i) .. letter)
                 end
                 validF = TestModelSuffix(name, string.format("%03d", i) .. letter)
                 if validD or validE or validF then
                     countSinceLastValidLetter = 0
+                end
             end
-                    end
             if validA or validB or validC or validD or validE or validF then
                 countSinceLastValid = 0
-                end
-                    end
+            end
+        end
     end)
-                end
+end
 
 RegisterCommand("model_search", function(source, args, rawCommand)
     if args[1] == nil then
@@ -542,12 +495,22 @@ function ConvertArg(arg)
     end
 end
 
+---
+--- Entity Natives
+--- 0x61914209C36EFDDB Entity Status? 3 on ground 4 picking up 5 carried 6 dropping
+--- 0x96C638784DB4C815 Has a number when target is alive is false after target dies
+--- 0xD21C7418C590BB40 -1 when alive 2 when dying / dead
+--- 0xAAACB74442C1BED3 number increments every call
+--- 0xC8CCDB712FBCBA92 Occluded? Visible on screen?
+--- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
+---
+
 RegisterCommand("native", function(source, args, rawCommand)
     if args[1] == nil then
         print("Please specify a function to call")
     else
         local args2 = {}
-
+        
         for k, v in pairs(args) do
             v = ConvertArg(v)
             if type(v) == 'table' then
@@ -577,10 +540,10 @@ RegisterCommand("golden", function(source, args, rawCommand)
         EnableAttributeOverpower(GetPlayerPed(), 2, 5000.0)
         -- 0x103C2F885ABEB00B Is Attribute Overpowered
         -- 0xF6A7C08DF2E28B28 Set Attribute Overpowered AMount
-    Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 0, 5000.0)
-    Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 1, 5000.0)
-    Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 2, 5000.0)
-end)
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 0, 5000.0)
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 1, 5000.0)
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 2, 5000.0)
+    end)
 end)
 
 RegisterCommand("clear_tracking", function(source, args, rawCommand)
@@ -696,6 +659,14 @@ function DrawCoords()
             .. " | T: " .. GetClockHours() .. ':' .. GetClockMinutes() -- Time
             , 0.01, 0.97, 0.3, true, 255, 255, 255, 255, false, 1)
     end
+end
+
+function TxtAtWorldCoord(x, y, z, txt, size, font)
+    local s, sx, sy = GetScreenCoordFromWorldCoord(x, y ,z)
+    -- Rounding to prevent some jitter
+    sx = Floor(sx * 200) / 200.0
+    sy = Floor(sy * 200) / 200.0
+    DrawTxt(txt, sx, sy, size, true, 255, 255, 255, 255, true, font) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
 end
 
 function DrawTxt(str, x, y, size, enableShadow, r, g, b, a, centre, font)
