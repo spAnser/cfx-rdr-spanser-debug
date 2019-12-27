@@ -296,6 +296,11 @@ function DrawItemInfo(entity)
         str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
     local eCoords = GetEntityCoords(entity)
+    str = str .. "\n" .. GetClosestObjectOfType(eCoords.x, eCoords.y, eCoords.z, 1.0, model_hash)
+    local shapeTest = StartShapeTestBox(eCoords.x, eCoords.y, eCoords.z, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, true, 16)
+    local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
+    str = str .. "\n" .. entityHit
+    str = str .. "\n" .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0)
     TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
