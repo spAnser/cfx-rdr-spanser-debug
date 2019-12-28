@@ -270,7 +270,21 @@ function DrawEntityInfo(entity)
     if HASH_PROVISIONS[provision_hash] then
         str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
     end
+    local carriedEntity = Citizen.InvokeNative(0xD806CD2A4F2C2996, entity)
+    local carriedEntityModel = GetEntityModel(carriedEntity)
+    local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
+    if carriedEntity then
+        str = str .. "\nCarrying: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or "")
+        if carriedEntityHash then
+            str = str .. "\nCarrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or "")
+            TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7, "Carrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or ""), 0.175, 1)
+        end
+    end
     local eCoords = GetEntityCoords(entity)
+    local eHeading = GetEntityHeading(entity)
+    str = str .. '\nx: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
+    local eRot = GetEntityRotation(entity)
+    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
     TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
@@ -300,7 +314,10 @@ function DrawItemInfo(entity)
     -- local shapeTest = StartShapeTestBox(eCoords.x, eCoords.y, eCoords.z, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, true, 16)
     -- local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
     -- str = str .. "\nShapeTest: " .. entityHit
-    str = str .. "\n" .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0)
+    local eHeading = GetEntityHeading(entity)
+    str = str .. '\nx: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
+    local eRot = GetEntityRotation(entity)
+    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
     TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
@@ -315,6 +332,10 @@ function DrawFoliageInfo(entity)
         str = str .. model_name .. "\n"
     end
     local eCoords = GetEntityCoords(entity)
+    local eHeading = GetEntityHeading(entity)
+    str = str .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
+    local eRot = GetEntityRotation(entity)
+    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
     TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
@@ -328,7 +349,10 @@ function DrawVehicleInfo(entity)
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
         str = str .. model_name .. "\n"
     end
-    local eCoords = GetEntityCoords(entity)
+    local eCoords = GetEntityCoords(entity)local eHeading = GetEntityHeading(entity)
+    str = str .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
+    local eRot = GetEntityRotation(entity)
+    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
     TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
 end
 
