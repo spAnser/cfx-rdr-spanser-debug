@@ -623,9 +623,13 @@ RegisterCommand('spawn', function(source, args, rawCommand)
 end)
 
 RegisterCommand("delete_entity", function(source, args, rawCommand)
-    -- Seems to only work with entities spawn with the spawn command
     Citizen.CreateThread(function()
-        DeleteEntity(args[1])
+        local entity_id = tonumber(args[1])
+        if entity_id then
+            SetEntityAsMissionEntity(entity_id, true, true)
+            DeletePed(entity_id)
+            DeleteEntity(entity_id)
+        end
     end)
 end)
 
