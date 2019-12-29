@@ -62,7 +62,7 @@ Citizen.CreateThread(function()
         local carriedEntityModel = GetEntityModel(carriedEntity)
         local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
         if carriedEntity then
-            TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.6, "Carrying: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or ""), 0.175, 1)
+            TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.6, "Carrying: id: " .. carriedEntity .. ' model : ' .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or ""), 0.175, 1)
             if carriedEntityHash then
                 TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7, "Carrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or ""), 0.175, 1)
             end
@@ -274,10 +274,9 @@ function DrawEntityInfo(entity)
     local carriedEntityModel = GetEntityModel(carriedEntity)
     local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
     if carriedEntity then
-        str = str .. "\nCarrying: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or "")
+        str = str .. "\nCarrying: id : " .. carriedEntity .. " model: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or "")
         if carriedEntityHash then
             str = str .. "\nCarrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or "")
-            TxtAtWorldCoord(pCoords.x, pCoords.y, pCoords.z - 0.7, "Carrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or ""), 0.175, 1)
         end
     end
     local eCoords = GetEntityCoords(entity)
