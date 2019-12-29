@@ -284,7 +284,23 @@ function DrawEntityInfo(entity)
     str = str .. '\nx: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
     local eRot = GetEntityRotation(entity)
     str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
-    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
+    local zOff = 0
+    local mount = GetMount(entity)
+    if not (mount == 0) then
+        zOff = 1
+        str = str .. '\nMounted on: ' .. mount
+    end
+    local vehicle = GetVehiclePedIsIn(entity)
+    if not (vehicle == 0) then
+        zOff = 1
+        local driver = GetPedInVehicleSeat(vehicle, -1)
+        if driver == entity then
+            str = str .. '\nVehicle driving: ' .. vehicle
+        else
+            str = str .. '\nVehicle passenger: ' .. vehicle
+        end
+    end
+    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z + zOff, str, 0.2, 1)
 end
 
 function DrawItemInfo(entity)
@@ -560,17 +576,27 @@ end)
 
 RegisterCommand("golden", function(source, args, rawCommand)
     Citizen.CreateThread(function()
-        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 0, 100) -- SetAttributeCoreValue
-        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 1, 100) -- SetAttributeCoreValue
-        Citizen.InvokeNative(0xC6258F41D86676E0, GetPlayerPed(), 2, 100) -- SetAttributeCoreValue
-        EnableAttributeOverpower(GetPlayerPed(), 0, 5000.0)
-        EnableAttributeOverpower(GetPlayerPed(), 1, 5000.0)
-        EnableAttributeOverpower(GetPlayerPed(), 2, 5000.0)
+        local player = GetPlayerPed()
+        Citizen.InvokeNative(0xC6258F41D86676E0, player, 0, 100) -- SetAttributeCoreValue
+        Citizen.InvokeNative(0xC6258F41D86676E0, player, 1, 100) -- SetAttributeCoreValue
+        Citizen.InvokeNative(0xC6258F41D86676E0, player, 2, 100) -- SetAttributeCoreValue
+        EnableAttributeOverpower(player, 0, 5000.0)
+        EnableAttributeOverpower(player, 1, 5000.0)
+        EnableAttributeOverpower(player, 2, 5000.0)
         -- 0x103C2F885ABEB00B Is Attribute Overpowered
-        -- 0xF6A7C08DF2E28B28 Set Attribute Overpowered AMount
-        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 0, 5000.0)
-        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 1, 5000.0)
-        Citizen.InvokeNative(0xF6A7C08DF2E28B28, GetPlayerPed(), 2, 5000.0)
+        -- 0xF6A7C08DF2E28B28 Set Attribute Overpowered Amount
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, player, 0, 5000.0)
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, player, 1, 5000.0)
+        Citizen.InvokeNative(0xF6A7C08DF2E28B28, player, 2, 5000.0)
+        local mount = GetMount(player)
+        if mount then
+            Citizen.InvokeNative(0xC6258F41D86676E0, mount, 0, 100) -- SetAttributeCoreValue
+            Citizen.InvokeNative(0xC6258F41D86676E0, mount, 1, 100) -- SetAttributeCoreValue
+            EnableAttributeOverpower(mount, 0, 5000.0)
+            EnableAttributeOverpower(mount, 1, 5000.0)
+            Citizen.InvokeNative(0xF6A7C08DF2E28B28, mount, 0, 5000.0)
+            Citizen.InvokeNative(0xF6A7C08DF2E28B28, mount, 1, 5000.0)
+        end
     end)
 end)
 
