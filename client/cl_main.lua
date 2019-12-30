@@ -255,6 +255,8 @@ function DrawEntityInfo(entity)
         str = str .. " | Model: " .. tostring(model_hash) .. "\n"
         str = str .. model_name .. "\n"
     end
+    -- Set Model Variation with 0xFFA1594703ED27CA
+    str = str .. "Model Variation: " .. tostring(Citizen.InvokeNative(0xA622E66EEE92A08D, entity)) .. " | "  .. tostring(Citizen.InvokeNative(0x90403E8107B60E81, entity)) .. "\n"
     str = str .. "MetapedType: " .. tostring(Citizen.InvokeNative(0xEC9A1261BF0CE510, entity))
     str = str .. " | PedType: " .. tostring(GetPedType(entity))
     str = str .. " | Pop Type: ".. tostring(GetEntityPopulationType(entity)) .. "\n"
