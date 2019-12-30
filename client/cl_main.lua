@@ -522,12 +522,19 @@ function ConvertArg(arg)
     if arg:sub(1, #hashStart) == hashStart then
         local hashName = GetTextSubstring(arg, 5, GetLengthOfLiteralString(arg))
         return GetHashKey(hashName)
-    elseif arg == "PLAYER_ID" then
+    elseif arg == "PLAYER_ID" or arg == "P_ID" then
         return GetPlayerPed()
-    elseif arg == "PLAYER_COORD" then
+    elseif arg == "PLAYER_COORD" or arg == "P_COORD" then
         local player = PlayerPedId()
         local coords = GetEntityCoords(player)
         return { coords.x, coords.y, coords.z }
+    elseif arg == "PLAYER_COORD_GROUND" or arg == "P_COORD_G" then
+        local player = PlayerPedId()
+        local coords = GetEntityCoords(player)
+        return { coords.x, coords.y, coords.z - 1.0 }
+    elseif arg == "PLAYER_DIR" or arg == "P_DIR" then
+        local player = PlayerPedId()
+        return GetEntityHeading(player)
     elseif arg == "true" then
         return true
     elseif arg == "false" then
