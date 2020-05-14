@@ -1,55 +1,48 @@
-local entitiesToDraw = {}
-local foliageToDraw = {}
-local itemsToDraw = {}
-local vehiclesToDraw = {}
+-- Citizen.CreateThread(function()
+--     while true do
+--         Citizen.Wait(1)
+--         if IsControlJustReleased(0, 0xA5BDCD3C) then
+--             SetNuiFocus(true, true)
+--         end
+--     end
+-- end)
 
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1)
-        if IsControlJustReleased(0, 0xA5BDCD3C) then
-            SetNuiFocus(true, true)
-        end
-    end
-end)
+-- RegisterNUICallback('loaded', function(data, cb)
+--     SendNUIMessage({
+--         type = 'ON_SET_TRACKED',
+--         entities = Config.TrackEntities,
+--         foliage = Config.TrackFoliage,
+--         items = Config.TrackItems,
+--         vehicles = Config.TrackVehicles,
+--     })
+-- end)
 
-RegisterNUICallback('loaded', function(data, cb)
-    SendNUIMessage({
-        type = 'ON_SET_TRACKED',
-        entities = Config.TrackEntities,
-        foliage = Config.TrackFoliage,
-        items = Config.TrackItems,
-        vehicles = Config.TrackVehicles,
-    })
-end)
+-- RegisterNUICallback('set_tracking', function(data)
+--     if data.value == false then
+--         Config[data.key] = false
+--         if data.key == 'TrackEntities' then
+--             entitiesToDraw = {}
+--         elseif data.key == 'TrackFoliage' then
+--             foliageToDraw = {}
+--         elseif data.key == 'TrackItems' then
+--             itemsToDraw = {}
+--         elseif data.key == 'TrackVehicles' then
+--             vehiclesToDraw = {}
+--         end
+--     else
+--         Config[data.key] = 1
+--     end
+-- end)
 
-RegisterNUICallback('set_tracking', function(data)
-    if data.value == false then
-        Config[data.key] = false
-        if data.key == 'TrackEntities' then
-            entitiesToDraw = {}
-        elseif data.key == 'TrackFoliage' then
-            foliageToDraw = {}
-        elseif data.key == 'TrackItems' then
-            itemsToDraw = {}
-        elseif data.key == 'TrackVehicles' then
-            vehiclesToDraw = {}
-        end
-    else
-        Config[data.key] = 1
-    end
-end)
-
-RegisterNUICallback('close_ui', function(data, cb)
-    SetNuiFocus(false)
-end)
+-- RegisterNUICallback('close_ui', function(data, cb)
+--     SetNuiFocus(false)
+-- end)
 
 Citizen.CreateThread(function()
     -- UI loop
     while true do
-        Citizen.Wait(10)
+        Citizen.Wait(1)
         DrawCoords()
-
-        DrawTrackedInfo()
 
         -- Draw Player Location / Spawn Location
         local player = GetPlayerPed()
@@ -74,160 +67,14 @@ Citizen.CreateThread(function()
     end
 end)
 
-Citizen.CreateThread(function()
-    -- Surrounding Info / Tracking
-    while true do
-        Citizen.Wait(10)
-        local player = PlayerPedId()
-
-        -- World - Ground / Walls / Rocks
-        -- Below Player
-        local coords = GetEntityCoords(player)
-        local shapeTest = StartShapeTestRay(coords.x, coords.y, coords.z, coords.x, coords.y, coords.z - 5.0, 1, 1)
-        local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
-        if hit > 0 then
-            TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, "Standing On: " .. tostring(entityHit), 0.15, 1)
-        end
-
-        -- World - Ground / Walls / Rocks
-        -- Infront of Player
-        local coordsf = GetOffsetFromEntityInWorldCoords(player, 0.0, 2.5, 0.0)
-        local shapeTest = StartShapeTestRay(coords.x, coords.y, coords.z, coordsf.x, coordsf.y, coordsf.z, 1)
-        local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
-        if hit > 0 then
-            TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, "1: " .. tostring(entityHit), 0.3, 1)
-        end
-
-        local flags = {
-            -- 1,    --    1 World - Ground / Walls / Rocks --  Disabled because the 2 above show below player and in front of player
-            2,    --    2 Vehicle
-            math.floor(2^2),  --    4 Ped
-            math.floor(2^3),  --    8 Entity
-            math.floor(2^4),  --   16 Items - Pelts / Buckets / Brooms / Power Poles / Lasso
-            math.floor(2^5),  --   32 Pickup Weapon?
-            math.floor(2^6),  --   64 Glass - Breakable?
-            math.floor(2^7),  --  128 Water
-            math.floor(2^8),  --  256 Shrubs / Bushes / Small Trees
-            math.floor(2^9),  --  512 Road / Zone ?
-            math.floor(2^10), -- 1024 Horse Ped
-            math.floor(2^11), -- 2048 Horse Entity
-            math.floor(2^12), -- 4096 Not seen
-            math.floor(2^13), -- 8192 Not seen
-            math.floor(2^14), -- 16384 Not seen
-            math.floor(2^15), -- 32768 Not seen
-            math.floor(2^16), -- 65536 Not seen
-        }
-
-        for key, flag in pairs(flags) do
-            local excludeEntity = player
-            local loop = { 1, 2 }
-            if flag == 1 or flag == 4 or flag == 8 then
-                loop = { 1 }
-            end
-            for _ in pairs(loop) do
-                -- local coordsf = GetOffsetFromEntityInWorldCoords(player, 0.0, 2.5, 0.0)
-                -- local shapeTest = StartShapeTestRay(coords.x, coords.y, coords.z, coordsf.x, coordsf.y, coordsf.z, flag, excludeEntity)
-                local shapeTest = StartShapeTestBox(coords.x, coords.y, coords.z, 5.0, 5.0, 2.0, 0.0, 0.0, 0.0, true, flag, excludeEntity)
-                local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
-                excludeEntity = entityHit
-                -- print(flag, rtnVal, hit, endCoords, surfaceNormal, entityHit)
-                if hit > 0 then
-                    local str = flag .. ": " .. tostring(entityHit) .. "\n"
-                    if flag == 2 then
-                        if Config.TrackVehicles == 1 then
-                            vehiclesToDraw[entityHit] = true
-                        else
-                            str = false
-                            DrawVehicleInfo(entityHit)
-                        end
-                    elseif flag == 2^3 or flag == 2^11 then
-                        if Config.TrackEntities == 1 then
-                            entitiesToDraw[entityHit] = true
-                        else
-                            str = false
-                            DrawEntityInfo(entityHit)
-                        end
-                    elseif flag == 2^4 then
-                        if Config.TrackItems == 1 then
-                            itemsToDraw[entityHit] = true
-                        else
-                            str = false
-                            DrawItemInfo(entityHit)
-                        end
-                    elseif flag == 2^8 then
-                        if Config.TrackFoliage == 1 then
-                            foliageToDraw[entityHit] = true
-                        else
-                            str = false
-                            DrawFoliageInfo(entityHit)
-                        end
-                    end
-                    if str then
-                        TxtAtWorldCoord(endCoords.x, endCoords.y, endCoords.z, str, 0.2, 1)
-                    end
-                end
-            end
-        end
-    end
-end)
-
 function LoadModel(model)
     local attempts = 0
     while attempts < 100 and not HasModelLoaded(model) do
         RequestModel(model)
-        Citizen.Wait(10)
+        Citizen.Wait(1)
         attempts = attempts + 1
     end
     return IsModelValid(model)
-end
-
-function GetStatusText(status)
-    local statusTexts = {
-        "", -- 1
-        "Being Hogtied", -- 2
-        "On Ground", -- 3
-        "Being Picked Up", -- 4
-        "Being Carried", -- 5
-        "Being Dropped", -- 6
-    }
-    if tonumber(status) == nil then
-        if status == true then
-            status = 1
-        else
-            status = 0
-        end
-    end
-    if status > 0 and status < 7 then
-        return statusTexts[status]
-    else
-        return status
-    end
-end
-
-function DrawTrackedInfo()
-    for entity, active in pairs(entitiesToDraw) do
-        if active and IsEntityOnScreen(entity) then
-            DrawEntityInfo(entity)
-        end
-    end
-
-    for entity, active in pairs(itemsToDraw) do
-        if active and IsEntityOnScreen(entity) then
-            DrawItemInfo(entity)
-        end
-    end
-
-    for entity, active in pairs(foliageToDraw) do
-        if active and IsEntityOnScreen(entity) then
-            DrawFoliageInfo(entity)
-        end
-    end
-
-    for entity, active in pairs(vehiclesToDraw) do
-        if active and IsEntityOnScreen(entity) then
-            DrawVehicleInfo(entity)
-        end
-    end
 end
 
 function GetHashName(hash)
@@ -243,134 +90,7 @@ function GetHashName(hash)
     if HASH_VEHICLES[hash] then
         return HASH_VEHICLES[hash]
     end
-end
-
-function DrawEntityInfo(entity)
-    local str = "ID: " .. tostring(entity)
-    local model_hash = GetEntityModel(entity)
-    local model_name = GetHashName(model_hash)
-    if not model_name  then
-        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
-    else
-        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-        str = str .. model_name .. "\n"
-    end
-    -- Set Model Variation with 0xFFA1594703ED27CA
-    str = str .. "Model Variation: " .. tostring(Citizen.InvokeNative(0xA622E66EEE92A08D, entity)) .. " | "  .. tostring(Citizen.InvokeNative(0x90403E8107B60E81, entity)) .. "\n"
-    str = str .. "MetapedType: " .. tostring(Citizen.InvokeNative(0xEC9A1261BF0CE510, entity))
-    str = str .. " | PedType: " .. tostring(GetPedType(entity))
-    str = str .. " | Pop Type: ".. tostring(GetEntityPopulationType(entity)) .. "\n"
-    str = str .. "Looted: " .. tostring(Citizen.InvokeNative(0x8DE41E9902E85756, entity)) -- Set looted status with 0x6BCF5F3D8FFE988D
-    str = str .. " | Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
-    local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
-    str = str .. "Status: " .. GetStatusText(entityStatus) .. "\n"
-    str = str .. tostring(Citizen.InvokeNative(0x97F696ACA466B4E0, entity))
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0xD21C7418C590BB40, entity)) -- Dead?
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
-    local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
-    str = str .. " | " .. tostring(provision_hash)
-    if HASH_PROVISIONS[provision_hash] then
-        str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
-    end
-    local carriedEntity = Citizen.InvokeNative(0xD806CD2A4F2C2996, entity)
-    local carriedEntityModel = GetEntityModel(carriedEntity)
-    local carriedEntityHash = Citizen.InvokeNative(0x31FEF6A20F00B963, carriedEntity)
-    if carriedEntity then
-        str = str .. "\nCarrying: id : " .. carriedEntity .. " model: " .. carriedEntityModel .. " | " .. (GetHashName(carriedEntityModel) or "")
-        if carriedEntityHash then
-            str = str .. "\nCarrying: " .. carriedEntityHash .. " | " .. (GetHashName(carriedEntityHash) or "")
-        end
-    end
-    local eCoords = GetEntityCoords(entity)
-    local eHeading = GetEntityHeading(entity)
-    str = str .. '\nx: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
-    local eRot = GetEntityRotation(entity)
-    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
-    local zOff = 0
-    local mount = GetMount(entity)
-    if not (mount == 0) then
-        zOff = 1
-        str = str .. '\nMounted on: ' .. mount
-    end
-    local vehicle = GetVehiclePedIsIn(entity)
-    if not (vehicle == 0) then
-        zOff = 1
-        local driver = GetPedInVehicleSeat(vehicle, -1)
-        if driver == entity then
-            str = str .. '\nVehicle driving: ' .. vehicle
-        else
-            str = str .. '\nVehicle passenger: ' .. vehicle
-        end
-    end
-    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z + zOff, str, 0.2, 1)
-end
-
-function DrawItemInfo(entity)
-    local str = "[16] ID: " .. tostring(entity)
-    local model_hash = GetEntityModel(entity)
-    local model_name = GetHashName(model_hash)
-    if not model_name  then
-        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
-    else
-        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-        str = str .. model_name .. "\n"
-    end
-    str = str .. "Visible: " .. tostring(Citizen.InvokeNative(0xC8CCDB712FBCBA92, entity)) .. "\n"
-    local entityStatus = Citizen.InvokeNative(0x61914209C36EFDDB, entity)
-    str = str .. "Status: " .. GetStatusText(entityStatus) .. "\n"
-    str = str .. tostring(Citizen.InvokeNative(0x97F696ACA466B4E0, entity))
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0xD21C7418C590BB40, entity)) -- Dead?
-    str = str .. " | " .. tostring(Citizen.InvokeNative(0x0FD25587BB306C86, entity))
-    local provision_hash = Citizen.InvokeNative(0x31FEF6A20F00B963, entity) -- Provision Hash ? -- Can be set with 0x399657ED871B3A6C
-    str = str .. " | " .. tostring(provision_hash)
-    if HASH_PROVISIONS[provision_hash] then
-        str = str .. "\n" .. HASH_PROVISIONS[provision_hash]
-    end
-    local eCoords = GetEntityCoords(entity)
-    -- str = str .. "\nClosestObjectOfType: " .. GetClosestObjectOfType(eCoords.x, eCoords.y, eCoords.z, 1.0, model_hash)
-    -- local shapeTest = StartShapeTestBox(eCoords.x, eCoords.y, eCoords.z, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, true, 16)
-    -- local rtnVal, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(shapeTest)
-    -- str = str .. "\nShapeTest: " .. entityHit
-    local eHeading = GetEntityHeading(entity)
-    str = str .. '\nx: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
-    local eRot = GetEntityRotation(entity)
-    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
-    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
-end
-
-function DrawFoliageInfo(entity)
-    local str = "[256] ID: " .. tostring(entity)
-    local model_hash = GetEntityModel(entity)
-    local model_name = GetHashName(model_hash)
-    if not model_name  then
-        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
-    else
-        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-        str = str .. model_name .. "\n"
-    end
-    local eCoords = GetEntityCoords(entity)
-    local eHeading = GetEntityHeading(entity)
-    str = str .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
-    local eRot = GetEntityRotation(entity)
-    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
-    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
-end
-
-function DrawVehicleInfo(entity)
-    local str = "[2] ID: " .. tostring(entity)
-    local model_hash = GetEntityModel(entity)
-    local model_name = GetHashName(model_hash)
-    if not model_name  then
-        str = str .. " | Model: ~e~" .. tostring(model_hash) .. "~q~\n"
-    else
-        str = str .. " | Model: " .. tostring(model_hash) .. "\n"
-        str = str .. model_name .. "\n"
-    end
-    local eCoords = GetEntityCoords(entity)local eHeading = GetEntityHeading(entity)
-    str = str .. 'x: ' .. (Floor(eCoords.x * 100) / 100.0) .. ' y: ' .. (Floor(eCoords.y * 100) / 100.0) .. ' z: ' .. (Floor(eCoords.z * 100) / 100.0) .. ' h: ' .. (Floor(eHeading * 100) / 100.0)
-    local eRot = GetEntityRotation(entity)
-    str = str .. '\nRot: x: ' .. (Floor(eRot.x * 100) / 100.0) .. ' y: ' .. (Floor(eRot.y * 100) / 100.0) .. ' z: ' .. (Floor(eRot.z * 100) / 100.0)
-    TxtAtWorldCoord(eCoords.x, eCoords.y, eCoords.z, str, 0.2, 1)
+    return false
 end
 
 function GetHashKeyIfValid(model_name)
@@ -386,11 +106,17 @@ end
 function PrintValidModel(model_name)
     local model_hash = GetHashKeyIfValid(model_name)
     if model_hash then
-        if HASH_MODELS[model_hash] then
-            print(model_name .. " is valid " .. model_hash)
+        local knownModel = GetHashName(model_hash)
+        if knownModel then
+            if knownModel == model_name then
+                print(model_name .. " is valid " .. model_hash)
+            else
+                print(model_name .. " is valid " .. model_hash .. ' but clashes with ' .. knownModel)
+            end
         else
             print('NEW: ' .. model_name .. " is valid " .. model_hash)
         end
+        ModelSearch(model_name .. '_GROUP_')
         return true
     end
 end
@@ -484,14 +210,36 @@ RegisterCommand("model_search", function(source, args, rawCommand)
         ModelSearch(args[1])
         ModelSearch('P_' .. args[1])
         ModelSearch('P_' .. args[1] .. '_')
+        ModelSearch('P_STATIC_' .. args[1])
+        ModelSearch('P_STATIC_' .. args[1] .. '_')
+        ModelSearch('P_RE_' .. args[1])
+        ModelSearch('P_RE_' .. args[1] .. '_')
         ModelSearch('P_GEN_' .. args[1]) -- Double Check accuracy
         ModelSearch('P_GEN_' .. args[1] .. '_') -- Double Check accuracy
+        ModelSearch('P_' .. args[1] .. '_CS')
         ModelSearch('P_CS_' .. args[1])
         ModelSearch('P_CS_' .. args[1] .. '_')
+        ModelSearch('P_DIS_' .. args[1])
+        ModelSearch('P_DIS_' .. args[1] .. '_')
         ModelSearch('S_' .. args[1])
         ModelSearch('S_' .. args[1] .. '_')
         ModelSearch('S_INV_' .. args[1])
         ModelSearch('S_INV_' .. args[1] .. '_')
+    end
+end)
+
+RegisterCommand("identify", function(source, args, rawCommand)
+    local hash = tonumber(args[1])
+    if HASH_MODELS[hash] then
+        print('HASH_MODELS: ', HASH_MODELS[hash])
+    elseif HASH_PEDS[hash] then
+        print('HASH_PEDS: ', HASH_PEDS[hash])
+    elseif HASH_PROVISIONS[hash] then
+        print('HASH_PROVISIONS: ', HASH_PROVISIONS[hash])
+    elseif HASH_VEHICLES[hash] then
+        print('HASH_VEHICLES: ', HASH_VEHICLES[hash])
+    else
+        print("I don't know that hash.")
     end
 end)
 
@@ -524,7 +272,9 @@ function ConvertArg(arg)
     if arg:sub(1, #hashStart) == hashStart then
         local hashName = GetTextSubstring(arg, 5, GetLengthOfLiteralString(arg))
         return GetHashKey(hashName)
-    elseif arg == "PLAYER_ID" or arg == "P_ID" then
+    elseif arg == "PLAYER_ID" then
+        return PlayerId()
+    elseif arg == "P_ID" then
         return GetPlayerPed()
     elseif arg == "PLAYER_COORD" or arg == "P_COORD" then
         local player = PlayerPedId()
@@ -555,33 +305,8 @@ end
 --- 0xD21C7418C590BB40 -1 when alive 2 when dying / dead
 --- 0xAAACB74442C1BED3 number increments every call
 --- 0xC8CCDB712FBCBA92 Occluded? Visible on screen?
---- 0x31FEF6A20F00B963 ? Not 100% sure but if I remember correctly it might be a flag of some sort. Same pelts of same quality were identical but different quality pelts were different. Also different pelts of same quality were different.
+--- 0x31FEF6A20F00B963 Provision Hash
 ---
-
-RegisterCommand("native", function(source, args, rawCommand)
-    if args[1] == nil then
-        print("Please specify a function to call")
-    else
-        local args2 = {}
-        
-        for k, v in pairs(args) do
-            v = ConvertArg(v)
-            if type(v) == 'table' then
-                for key, value in pairs(v) do
-                    table.insert(args2, value)
-                end
-            else
-                table.insert(args2, v)
-            end
-        end
-        print(table.unpack(args2))
-
-        Citizen.CreateThread(function()
-            print(Citizen.InvokeNative(table.unpack(args2)))
-            print("----")
-        end)
-    end
-end)
 
 RegisterCommand("golden", function(source, args, rawCommand)
     Citizen.CreateThread(function()
@@ -609,15 +334,69 @@ RegisterCommand("golden", function(source, args, rawCommand)
     end)
 end)
 
-RegisterCommand("clear_tracking", function(source, args, rawCommand)
-    entitiesToDraw = {}
-    itemsToDraw = {}
-    foliageToDraw = {}
-    vehiclesToDraw = {}
-end)
-
 RegisterCommand("weather", function(source, args, rawCommand)
     Citizen.InvokeNative(0x59174F1AFE095B5A, tonumber(args[1]), true, false, true, true, false)
+end)
+
+RegisterCommand('draw_sprite', function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local drawCount = 0
+        local player = PlayerPedId()
+        local pCoord = GetEntityCoords(player)
+        while drawCount < 1000 do
+            Citizen.Wait(1)
+            SpriteAtWorldCoord(pCoord.x, pCoord.y, pCoord.z, args[1], args[2], 0.1)
+            drawCount = drawCount + 1
+        end
+    end)
+end)
+
+RegisterCommand("loadout", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local player = GetPlayerPed()
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_KNIFE'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_KNIFE_JAWBONE'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_MACHETE'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_HATCHET'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_HATCHET_HUNTER'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_THROWN_DYNAMITE'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_THROWN_MOLOTOV'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_THROWN_THROWING_KNIVES'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_THROWN_TOMAHAWK'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_THROWN_TOMAHAWK_ANCIENT'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_SHOTGUN_SAWEDOFF'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_BOW'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_LASSO'), 0, true, 0)
+        Citizen.Wait(750)
+        Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_SNIPERRIFLE_CARCANO'), 0, true, 0)
+    end)
+end)
+
+RegisterCommand('bow_test', function(source, args, rawCommand)
+    RemoveAllPedWeapons(GetPlayerPed(), true, true)
+    GiveWeaponToPed_2(GetPlayerPed(), GetHashKey('WEAPON_BOW'), 0, false, true, 0, false, 0.5, 1.0, 752097756, false, 0.0, false)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW'), 6, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_IMPROVED'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_SMALL_GAME'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_FIRE'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_POISON'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_TRACKING'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_DYNAMITE'), 5, 752097756)
+    Citizen.InvokeNative(0xADF692B254977C0C, GetPlayerPed(), GetHashKey('WEAPON_BOW'), true, 0, false, false)
+    Citizen.InvokeNative(0xCC9C4393523833E2, GetPlayerPed(), GetHashKey('WEAPON_BOW'), GetHashKey('AMMO_ARROW_DYNAMITE'))
 end)
 
 RegisterCommand("weapon", function(source, args, rawCommand) -- GIVES A WEAPON
@@ -626,6 +405,9 @@ RegisterCommand("weapon", function(source, args, rawCommand) -- GIVES A WEAPON
     else
         local player = GetPlayerPed()
         Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey(args[1]), 500, true, 0)
+        -- 0xB190BCA3F4042F95     P_ID    HASH_WEAPON_BOW      10   -   GIVE DEFAULT AMMO FOR WEAPON
+        -- 0x106A811C6D3035F3     P_ID    HASH_AMMO_ARROW      10   -   GIVE SPECIFIC AMMO
+        -- SetCurrentPedWeapon    P_ID    HASH_WEAPON_UNARMED  true
     end
 end, false)
 
@@ -638,22 +420,64 @@ RegisterCommand('spawn', function(source, args, rawCommand)
     local spawnCoords = GetOffsetFromEntityInWorldCoords(player, 0, 5.0, 0)
 
     local modelName = args[1]
-    local modelHash = GetHashKey(modelName)
+    local modelHash = tonumber(modelName)
+    if nil == modelHash then
+        modelHash = GetHashKey(modelName)
+    end
     print(modelName .. " : " .. modelHash)
-    print(modelName .. " : " .. Citizen.InvokeNative(0xFD340785ADF8CFB7, modelName))
+    print(modelName .. " : " .. GetHashKey(modelName))
     print(IsModelInCdimage(modelHash), IsModelAVehicle(modelHash), IsModelAPed(modelHash), IsModelValid(modelHash))
-    Citizen.CreateThread(function()
-        LoadModel(modelHash)
-        local entity = CreatePed(modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, pDir, false, false, false, false)
-        SetEntityVisible(entity, true)
-        SetEntityAlpha(entity, 255, false)
-        Citizen.InvokeNative(0x283978A15512B2FE, entity, true)
-        SetModelAsNoLongerNeeded(modelHash)
-        GetEntityCoords(entity)
-        if Config.TrackEntities == 1 then
-            entitiesToDraw[entity] = true
-        end
-    end)
+    if (IsModelAPed(modelHash)) then
+        Citizen.CreateThread(function()
+            LoadModel(modelHash)
+            local entity = CreatePed(modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, pDir, true, false, false, false)
+            SetEntityVisible(entity, true)
+            SetEntityAlpha(entity, 255, false)
+            Citizen.InvokeNative(0x283978A15512B2FE, entity, true)
+            SetModelAsNoLongerNeeded(modelHash)
+            SetEntityAsNoLongerNeeded(entity)
+            GetEntityCoords(entity)
+            if Config.TrackEntities == 1 then
+                entitiesToDraw[entity] = true
+            end
+        end)
+    end
+end)
+
+RegisterCommand("hash", function(source, args, rawCommand) -- GIVES A WEAPON
+    print(GetHashKey(args[1]))
+end, false)
+
+RegisterCommand('vehicle', function(source, args, rawCommand)
+    local player = GetPlayerPed()
+    local pCoords = GetEntityCoords(player)
+    local pDir = GetEntityHeading(player)
+    -- 0x405180B14DA5A935 SetPedType(entity, ??) -- Always makes PedType 4
+
+    local spawnCoords = GetOffsetFromEntityInWorldCoords(player, 0, 2.0, 0)
+
+    local modelName = args[1]
+    local modelHash
+    if not IsModelAVehicle(tonumber(args[1])) then
+        modelHash = GetHashKey(modelName)
+    else
+        modelHash = tonumber(args[1])
+    end
+    print(modelName .. " : " .. modelHash)
+    print(modelHash, IsModelInCdimage(modelHash), IsModelAVehicle(modelHash), IsModelAPed(modelHash), IsModelValid(modelHash))
+    if IsModelAVehicle(modelHash) then
+        Citizen.CreateThread(function()
+            LoadModel(modelHash)
+            local entity = CreateVehicle(modelHash, spawnCoords.x, spawnCoords.y, spawnCoords.z, pDir - 90.0, false, false, false, false)
+            SetEntityVisible(entity, true)
+            SetEntityAlpha(entity, 255, false)
+            SetModelAsNoLongerNeeded(modelHash)
+            GetEntityCoords(entity)
+            if Config.TrackVehicles == 1 then
+                vehiclesToDraw[entity] = true
+            end
+        end)
+    end
 end)
 
 RegisterCommand("delete_entity", function(source, args, rawCommand)
@@ -671,6 +495,8 @@ function SetEntityModel(entity, model)
     entity = tonumber(entity)
     if tonumber(model) == nil then
         model = GetHashKey(model)
+    else
+        model = tonumber(model)
     end
     if IsModelValid(model) then
         local entityCoords = GetEntityCoords(entity)
@@ -721,18 +547,19 @@ function DrawCoords()
         local pp = GetEntityCoords(ent)
         local hd = GetEntityHeading(ent)
         DrawTxt(
-            "x = " .. tonumber(string.format("%.2f", pp.x)) .. " y = " .. tonumber(string.format("%.2f", pp.y)) .. " z = " .. tonumber(string.format("%.2f", pp.z)) -- Coordinates
-            .. " | H: " .. headingDir(ent) .. " " .. tonumber(string.format("%.2f", hd)) -- Heading
-            .. " | T: " .. GetClockHours() .. ':' .. GetClockMinutes() -- Time
-            , 0.01, 0.97, 0.3, true, 255, 255, 255, 255, false, 1)
+            "x = " .. tonumber(string.format("%.4f", pp.x)) .. "\ny = " .. tonumber(string.format("%.4f", pp.y)) .. "\nz = " .. tonumber(string.format("%.4f", pp.z)) -- Coordinates
+            .. "\nH: " .. headingDir(ent) .. " " .. tonumber(string.format("%.2f", hd)) -- Heading
+            .. "\nT: " .. GetClockHours() .. ':' .. GetClockMinutes() -- Time
+            , 0.005, 0.75, 0.225, true, 255, 255, 255, 255, false, 1)
     end
 end
 
-function TxtAtWorldCoord(x, y, z, txt, size, font)
+function TxtAtWorldCoord(x, y, z, txt, size, font, alpha)
+    alpha = alpha or 255
     local s, sx, sy = GetScreenCoordFromWorldCoord(x, y ,z)
     if (sx > 0 and sx < 1) or (sy > 0 and sy < 1) then
         local s, sx, sy = GetHudScreenPositionFromWorldPosition(x, y, z)
-        DrawTxt(txt, sx, sy, size, true, 255, 255, 255, 255, true, font) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
+        DrawTxt(txt, sx, sy, size, true, 255, 255, 255, alpha, true, font) -- Font 2 has some symbol conversions ex. @ becomes the rockstar logo
     end
 end
 
@@ -745,3 +572,164 @@ function DrawTxt(str, x, y, size, enableShadow, r, g, b, a, centre, font)
     SetTextFontForCurrentCommand(font)
     DisplayText(str, x, y)
 end
+
+RegisterCommand("anim_scene", function(source, args, rawCommand)
+    if args[1] then
+        args[1] = ConvertArg(args[1])
+    end
+    if args[2] then
+        args[2] = ConvertArg(args[2])
+    end
+    Citizen.CreateThread(function()
+        local player = PlayerPedId()
+        local animScene = Citizen.InvokeNative(0x1FCA98E33C1437B3, 'script@beat@wilderness@chainGang@blackWhiteVariation1', 0, 'PBL_NORMAL', 0, 1)  -- _CREATE_ANIM_SCENE
+        print('create animScene: ', animScene)
+        local pCoord = GetEntityCoords(player)
+        -- pCoord = GetOffsetFromEntityInWorldCoords(player, -0.0185, 0.5436, -1.0016)
+        local pRot = GetEntityRotation(player)
+        Citizen.InvokeNative(0x020894BF17A02EF2, animScene, pCoord.x, pCoord.y, pCoord.z, pRot.x, pRot.y, pRot.z, 2) -- SET_ANIM_SCENE_ORIGIN
+        -- Citizen.InvokeNative(0x020894BF17A02EF2, animScene, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2) -- SET_ANIM_SCENE_ORIGIN
+        Citizen.InvokeNative(0x8B720AD451CA2AB3, animScene, "PRIS_3", player, 0) -- SET_ANIM_SCENE_ENTITY
+        -- Citizen.InvokeNative(0x8B720AD451CA2AB3, animScene, "arthur", 90214, 0) -- SET_ANIM_SCENE_ENTITY
+        Citizen.InvokeNative(0xAF068580194D9DC7, animScene) -- LOAD_ANIM_SCENE
+        Citizen.Wait(1000)
+        Citizen.InvokeNative(0xF4D94AF761768700, animScene) -- START_ANIM_SCENE
+        Citizen.Wait(10000)
+        Citizen.InvokeNative(0x84EEDB2C6E650000, animScene) -- _DELETE_ANIM_SCENE
+        print('delete animScene: ', animScene)
+    end)
+end)
+
+RegisterCommand("handover_money", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local player = PlayerPedId()
+        local animScene = CreateAnimScene('script@beat@town@townRobbery@handover_money', 64, 0, 0, 1)
+        print('create animScene: ', animScene)
+        local pCoord = GetEntityCoords(player, 1, 0)
+        pCoord = GetOffsetFromEntityInWorldCoords(player, -0.0497, 1.2016, 0.0)
+        local pRot = GetEntityRotation(player, 2)
+        SetAnimSceneOrigin(animScene, pCoord.x, pCoord.y, pCoord.z, pRot.x, pRot.y, pRot.z - 175.66, 2)
+        SetAnimSceneEntity(animScene, "pedPlayer", player, 0)
+        local objectModel = GetHashKey('P_FOLDEDBILLS01X')
+        local objMoney = CreateObject(objectModel, pCoord.x, pCoord.y, pCoord.z, 2)
+        SetAnimSceneEntity(animScene, "objMoney", objMoney, 0)
+        SetEntityVisible(objMoney, false)
+        local boneIndex = GetPedBoneIndex(player, 7966)
+        AttachEntityToEntity(objMoney, player, boneIndex, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 2, 1, 0, 0)
+        -- SetAnimSceneEntity(animScene, "pedStranger", 24625, 0)
+        LoadAnimScene(animScene)
+        Citizen.Wait(1000)
+        StartAnimScene(animScene)
+        Citizen.Wait(500)
+        SetEntityVisible(objMoney, true)
+        Citizen.Wait(2500)
+        SetEntityAsMissionEntity(objMoney, true, true)
+        DeleteObject(objMoney)
+        Citizen.Wait(3000)
+        Citizen.InvokeNative(0x84EEDB2C6E650000 , animScene) -- _DELETE_ANIM_SCENE
+        print('delete animScene: ', animScene)
+    end)
+end)
+
+RegisterCommand("rope", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local player = PlayerPedId()
+        Citizen.InvokeNative(0x7981037A96E7D174, player)
+        Citizen.InvokeNative(0xAE6004120C18DF97, player, 0, 0)
+        SetPedConfigFlag(player, 137, 1)
+        SetPedConfigFlag(player, 44, 1)
+        SetPedConfigFlag(player, 26, 1)
+        SetEntityLoadCollisionFlag(player, true)
+        SetPedConfigFlag(player, 263, 0)
+        SetPedConfigFlag(player, 138, 1)
+        SetPedConfigFlag(player, 487, 1)
+        SetPedConfigFlag(player, 448, 1)
+        SetPedCanRagdoll(player, true)
+        Citizen.InvokeNative(0x18FF3110CF47115D, player, 7, false)
+        ClearPedTasks(player, 1, 0)
+        local object = CreateObject(1071795929, -315.1255, 733.6245, 122.897, 1, 1, 0, 0, 1)
+        -- SetEntityCoords(object, -315.1255, 733.6245, 122.897)
+        FreezeEntityPosition(object, true)
+        SetEntityLoadCollisionFlag(object, true)
+        -- SetEntityVisible(object, false)
+        local coord = GetEntityCoords(object, 1, 0)
+        local object2 = CreateObject(357863945, -315.075, 730.922, 119.6113, 1, 1, 0, 0, 1)
+        -- SetEntityCoords(object2, -315.075, 730.922, 119.6113)
+        FreezeEntityPosition(object2, true)
+        SetEntityLoadCollisionFlag(object2, true)
+        Citizen.InvokeNative(0xB6CBD40F8EA69E8A, object2)
+        AttachEntityToEntityPhysically(object2, player, 0, GetPedBoneIndex(player, 14284), 0.02, -0.11, 0.0, 0.0, 0.0, 0.0, 183.0, 88.5, 97.0, -1.0, 0, 1, 0, 0, 0, 1, 1065353216, 1065353216)
+        local fLocal_1029 = 3.3
+        local fLocal_1030 = 2.35
+        local rope = Citizen.InvokeNative(0xE9C59F6809373A99, coord.x, coord.y, coord.z, 0.0, 0.0, 0.0, fLocal_1030, 6, 1, 31, -1082130432)
+        Citizen.InvokeNative(0xF092B6030D6FD49C, rope, 'ROPE_SETTINGS_DEFAULT')
+        Citizen.InvokeNative(0x522FA3F490E2F7AC, rope, 1)
+        Citizen.InvokeNative(0x8D59079C37C21D78, rope, 2.0)
+        Citizen.InvokeNative(0x462FF2A432733A44, rope, object, object2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 'ropeAttach')
+        Citizen.InvokeNative(0x3C6490D940FF5D0B, rope, 0, "ropeAttach", fLocal_1029, 0)
+        Citizen.InvokeNative(0x76BAD9D538BCA1AA, rope, 0.0)
+        Citizen.InvokeNative(0xB40EA9E0D2E2F7F3, rope, 1.0)
+        Citizen.InvokeNative(0x86F0B6730C32AC14, player, 1)
+        Citizen.InvokeNative(0xEF371232BC6053E1, player)
+        Citizen.InvokeNative(0x8101BA1C0B462412, player, rope)
+        Citizen.Wait(2500)
+        SetPedToRagdoll(player, 1500, 1500, 1, 0, 1, 0)
+        SetPedConfigFlag(player, 448, 1)
+        SetEntityAsMissionEntity(207902, true, true)
+        DeleteEntity(207902)
+    end)
+end)
+
+RegisterCommand("hang", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local player = PlayerPedId()
+        local animScene = CreateAnimScene('script@beat@town@publicHanging@deputyplayerlever', 0, 'PBL_LEVER_GUARD_V1', 0, 1)
+        print('create animScene: ', animScene)
+        local pCoord = GetEntityCoords(player, 1, 0)
+        -- pCoord = GetOffsetFromEntityInWorldCoords(player, -0.0497, 1.2016, 0.0)
+        local pRot = GetEntityRotation(player, 2)
+        SetAnimSceneOrigin(animScene, pCoord.x, pCoord.y, pCoord.z, pRot.x, pRot.y, pRot.z, 2)
+        SetAnimSceneEntity(animScene, "plr", player, 0)
+        -- SetAnimSceneEntity(animScene, "pedStranger", 24625, 0)
+        LoadAnimScene(animScene)
+        Citizen.Wait(1000)
+        StartAnimScene(animScene)
+        Citizen.Wait(5000)
+        Citizen.InvokeNative(0x84EEDB2C6E650000 , animScene) -- _DELETE_ANIM_SCENE
+        print('delete animScene: ', animScene)
+    end)
+end)
+
+RegisterCommand("pickaxe", function(source, args, rawCommand)
+    Citizen.CreateThread(function()
+        local player = PlayerPedId()
+        local animScene = Citizen.InvokeNative(0x1FCA98E33C1437B3, 'script@story@GNG3@IG@IG_4_Prison_Work@Prison_Work', 0, 'pbl_WorkingLoop', 0, 1)  -- _CREATE_ANIM_SCENE
+        print('create animScene: ', animScene)
+        local pCoord = GetEntityCoords(player, 1, 0)
+        pCoord = GetOffsetFromEntityInWorldCoords(player, 0.0631, 1.7005, -1.1211)
+        local pRot = GetEntityRotation(player, 2)
+        Citizen.InvokeNative(0x020894BF17A02EF2, animScene, pCoord.x, pCoord.y, pCoord.z, pRot.x, pRot.y, pRot.z - 285.0, 2)
+        Citizen.InvokeNative(0x8B720AD451CA2AB3, animScene, "MrsAdler", player, 0) -- SET_ANIM_SCENE_ENTITY
+        local pickaxe = Citizen.InvokeNative(0x509D5878EB39E842, GetHashKey('P_PICKAXE01X'), pCoord.x, pCoord.y, pCoord.z, 2)
+        Citizen.InvokeNative(0x8B720AD451CA2AB3, animScene, "P_PICKAXE01X", pickaxe, 0) -- SET_ANIM_SCENE_ENTITY
+        Citizen.InvokeNative(0x1794B4FCC84D812F, pickaxe, false)
+        local boneIndex = Citizen.InvokeNative(0x3F428D08BE5AAE31, player, 7966)
+        Citizen.InvokeNative(0x6B9BBD38AB0796DF, pickaxe, player, boneIndex, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 2, 1, 0, 0)
+        Citizen.InvokeNative(0xAF068580194D9DC7, animScene)
+        Citizen.Wait(500)
+        Citizen.InvokeNative(0xF4D94AF761768700, animScene)
+        Citizen.InvokeNative(0x1794B4FCC84D812F, pickaxe, true)
+        Citizen.Wait(10000)
+        SetEntityAsMissionEntity(pickaxe, true, true)
+        DeleteObject(pickaxe)
+        Citizen.InvokeNative(0x84EEDB2C6E650000, animScene)
+        print('delete animScene: ', animScene)
+    end)
+end)
+
+
+-- RequestAnimDict("script_proc@robberies@homestead@lonnies_shack@deception")
+-- while not HasAnimDictLoaded("script_proc@robberies@homestead@lonnies_shack@deception") do
+--     Citizen.Wait(50)
+-- end
+-- TaskPlayAnim(player, "script_proc@robberies@homestead@lonnies_shack@deception", "hands_up_loop", 2.0, -2.0, -1, 0, 0, 0, 0, 0, 0, 0)

@@ -7,13 +7,15 @@ client_scripts {
     'hashes/hash_peds.lua',
     'hashes/hash_provisions.lua',
     'hashes/hash_vehicles.lua',
+    'client/function.lua',
     'client/cl_main.lua',
+    'client/search_tests.lua',
 }
-files {
-    'html/css/style.css',
-    'html/fonts/crock.ttf',
-    'html/js/main.js',
-    'html/js/vue.min.js',
-    'html/ui.html',
-}
-ui_page "html/ui.html"
+-- files {
+--     'html/css/style.css',
+--     'html/fonts/crock.ttf',
+--     'html/js/main.js',
+--     'html/js/vue.min.js',
+--     'html/ui.html',
+-- }
+-- ui_page "html/ui.html"
