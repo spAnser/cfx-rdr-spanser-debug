@@ -30,7 +30,7 @@ local entity_one_natives = {
     0xF59FDE7B4D31A630,
 }
 
-RegisterCommand("entity_one_test", function(source, args, rawCommand)
+RegisterCommand('entity_one_test', function(source, args, rawCommand)
     if args[1] then
         args[1] = ConvertArg(args[1])
     end
@@ -76,7 +76,7 @@ local entity_two_natives = {
     0xF7424890E4A094C0,
 }
 
-RegisterCommand("entity_two_test", function(source, args, rawCommand)
+RegisterCommand('entity_two_test', function(source, args, rawCommand)
     if args[1] then
         args[1] = ConvertArg(args[1])
     end
@@ -84,6 +84,7 @@ RegisterCommand("entity_two_test", function(source, args, rawCommand)
         args[2] = ConvertArg(args[2])
     end
     Citizen.CreateThread(function()
+        print('Start entity_two_test')
         for key, nativeHash in pairs(entity_two_natives) do
             Citizen.CreateThread(function()
                 local result = Citizen.InvokeNative(nativeHash, table.unpack(args))
@@ -103,6 +104,7 @@ RegisterCommand("entity_two_test", function(source, args, rawCommand)
             end)
             Citizen.Wait(500)
         end
+        print('End entity_two_test')
     end)
 end)
 
@@ -246,4 +248,13 @@ RegisterCommand("mass_search", function(source, args, rawCommand)
             Citizen.Wait(5)
         end
     end)
+end)
+
+RegisterCommand('current_test', function(source, args, rawCommand)
+    Citizen.InvokeNative(0xB8C984C0D47F4F07, -0.297, 0.352, 0)
+    Citizen.InvokeNative(0xB8C984C0D47F4F07, -0.297, 0.352, 1)
+    Citizen.InvokeNative(0x085C5B61A0114F32, -0.333, 0)
+    Citizen.InvokeNative(0xFE7966DF01452F32, 1511.248, 3270.837, -1952.663)
+    Citizen.InvokeNative(0x10C1767B93257480, 1521.417, 1273.795, -1962.431)
+    Citizen.InvokeNative(0x1FF8731BE1DFC0C0, 0.774, 0.917)
 end)

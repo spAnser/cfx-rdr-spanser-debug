@@ -238,6 +238,8 @@ RegisterCommand("identify", function(source, args, rawCommand)
         print('HASH_PROVISIONS: ', HASH_PROVISIONS[hash])
     elseif HASH_VEHICLES[hash] then
         print('HASH_VEHICLES: ', HASH_VEHICLES[hash])
+    elseif HASH_CARRIABLE[hash] then
+        print('HASH_CARRIABLE: ', HASH_CARRIABLE[hash])
     else
         print("I don't know that hash.")
     end
