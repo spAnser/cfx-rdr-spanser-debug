@@ -1,43 +1,3 @@
--- Citizen.CreateThread(function()
---     while true do
---         Citizen.Wait(1)
---         if IsControlJustReleased(0, 0xA5BDCD3C) then
---             SetNuiFocus(true, true)
---         end
---     end
--- end)
-
--- RegisterNUICallback('loaded', function(data, cb)
---     SendNUIMessage({
---         type = 'ON_SET_TRACKED',
---         entities = Config.TrackEntities,
---         foliage = Config.TrackFoliage,
---         items = Config.TrackItems,
---         vehicles = Config.TrackVehicles,
---     })
--- end)
-
--- RegisterNUICallback('set_tracking', function(data)
---     if data.value == false then
---         Config[data.key] = false
---         if data.key == 'TrackEntities' then
---             entitiesToDraw = {}
---         elseif data.key == 'TrackFoliage' then
---             foliageToDraw = {}
---         elseif data.key == 'TrackItems' then
---             itemsToDraw = {}
---         elseif data.key == 'TrackVehicles' then
---             vehiclesToDraw = {}
---         end
---     else
---         Config[data.key] = 1
---     end
--- end)
-
--- RegisterNUICallback('close_ui', function(data, cb)
---     SetNuiFocus(false)
--- end)
-
 Citizen.CreateThread(function()
     -- UI loop
     while true do
@@ -271,12 +231,16 @@ end)
 
 function ConvertArg(arg)
     local hashStart = "HASH_"
+    local strStart = "STR_"
     if arg:sub(1, #hashStart) == hashStart then
         local hashName = GetTextSubstring(arg, 5, GetLengthOfLiteralString(arg))
         return GetHashKey(hashName)
-    elseif arg == "PLAYER_ID" then
+    elseif arg:sub(1, #strStart) == strStart then
+        local str = GetTextSubstring(arg, 4, GetLengthOfLiteralString(arg))
+        return CreateVarString(10, 'LITERAL_STRING', str)
+    elseif arg == "PLAYER_ID" or arg == "P_ID" then
         return PlayerId()
-    elseif arg == "P_ID" then
+    elseif arg == "PLAYER_PED" or arg == "P_PED" then
         return GetPlayerPed()
     elseif arg == "PLAYER_COORD" or arg == "P_COORD" then
         local player = PlayerPedId()
@@ -289,9 +253,9 @@ function ConvertArg(arg)
     elseif arg == "PLAYER_DIR" or arg == "P_DIR" then
         local player = PlayerPedId()
         return GetEntityHeading(player)
-    elseif arg == "true" then
+    elseif arg:lower() == "true" then
         return true
-    elseif arg == "false" then
+    elseif arg:lower() == "false" then
         return false
     elseif not (nil == tonumber(arg)) then
         return tonumber(arg)
@@ -299,6 +263,45 @@ function ConvertArg(arg)
         return arg
     end
 end
+
+RegisterCommand('native', function(source, args, rawCommand)
+    if args[1] == nil then
+        print('Please specify a function to call')
+    else
+        local args2 = {}
+
+        for k, v in pairs(args) do
+            v = MG.dev_utility.ConvertArg(v)
+            if type(v) == 'table' then
+                for key, value in pairs(v) do
+                    table.insert(args2, value)
+                end
+            else
+                table.insert(args2, v)
+            end
+        end
+
+        print('Args:', table.unpack(args2))
+
+        Citizen.CreateThread(function()
+            local r = {}
+            r[1], r[2], r[3], r[4], r[5] = Citizen.InvokeNative(table.unpack(args2))
+            for k, v in pairs(r) do
+                -- if v then
+                    if tonumber(v) == nil then
+                        print('r' .. tostring(k), v)
+                    else
+                        local s = string.pack('i4', tonumber(v))
+                        local f = string.unpack('f', s)
+                        print('r' .. tostring(k), tonumber(v), f)
+                    end
+                -- end
+            end
+            print('============')
+        end)
+    end
+end)
+
 
 ---
 --- Entity Natives
@@ -474,7 +477,7 @@ RegisterCommand('vehicle', function(source, args, rawCommand)
             SetEntityVisible(entity, true)
             SetEntityAlpha(entity, 255, false)
             SetModelAsNoLongerNeeded(modelHash)
-            GetEntityCoords(entity)
+            --GetEntityCoords(entity)
             if Config.TrackVehicles == 1 then
                 vehiclesToDraw[entity] = true
             end
@@ -633,6 +636,8 @@ RegisterCommand("handover_money", function(source, args, rawCommand)
     end)
 end)
 
+-- 0xAAA34F8A7CB32098 Clear Cuffs?
+-- 0xE1EF3C1216AFF2CD Clear Cuffs?
 RegisterCommand("rope", function(source, args, rawCommand)
     Citizen.CreateThread(function()
         local player = PlayerPedId()
@@ -677,8 +682,8 @@ RegisterCommand("rope", function(source, args, rawCommand)
         Citizen.Wait(2500)
         SetPedToRagdoll(player, 1500, 1500, 1, 0, 1, 0)
         SetPedConfigFlag(player, 448, 1)
-        SetEntityAsMissionEntity(207902, true, true)
-        DeleteEntity(207902)
+        SetEntityAsMissionEntity(215816, true, true)
+        DeleteEntity(215816)
     end)
 end)
 

@@ -1041,3 +1041,18 @@ DOOR_HASHES = {
 }
 
 DOOR_ENTITIES = {}
+
+
+Citizen.CreateThread(function()
+    Citizen.Wait(5000)
+    while true do
+        for doorHash, doorData in pairs(DOOR_HASHES) do
+            local doorEntity = N_0xf7424890e4a094c0(doorHash) -- _GET_ENTITY_FROM_DOORHASH
+            DOOR_ENTITIES[doorEntity] = doorHash
+            if not IsDoorRegisteredWithSystem(doorHash) then
+                N_0xd99229fe93b46286(doorHash, 1, 1, 0, 0, 0, 0) -- _REGISTER_DOOR_WITH_SYSTEM
+            end
+        end
+        Citizen.Wait(10000)
+    end
+end)
