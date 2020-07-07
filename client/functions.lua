@@ -59,7 +59,7 @@ function DrawEntityInfo(entity)
     str = str .. " | Carcass Quality: " .. Qualities[eCarcassQuality + 1]
 
     local pedQuality = Citizen.InvokeNative(0x7BCC6087D130312A, entity)
-    str = str .. " | Ped Quality: " .. pedQuality
+    str = str .. " | Ped Quality: " .. tostring(pedQuality)
     -- Dont know for what purpose but thats what i got from dec scripts maybe related to rare animals?
     --  2: "PED_QUALITY_HIGH"
     --  1: "PED_QUALITY_MEDIUM"
