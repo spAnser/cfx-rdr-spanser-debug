@@ -20,7 +20,7 @@ Displays Coordinates, Heading (including compass directions) and Time in the bot
 
 So if you wanted to give yourself a Pump Shotgun with the native command you can run:  
 ex. `native 0xB282DC6EBD803C75 PLAYER_PED HASH_WEAPON_SHOTGUN_PUMP 500 true 0`  
-This will automatically look up hashes if the string starts with `HASH_`. `PLAYER_PED` will be replaced using GetPlayerPed()
+This will automatically look up hashes if the string starts with `HASH_`. `PLAYER_PED` will be replaced using PlayerPedId()
 
 String starts with `HASH_` = GetHashKey of remaining string
 
@@ -28,7 +28,7 @@ String starts with `STR_` = CreateVarString of remaining string
 
 `PLAYER_ID`/`P_ID` = PlayerId()
 
-`PLAYER_PED`/`P_PED` = GetPlayerPed()
+`PLAYER_PED`/`P_PED` = PlayerPedId()
 
 `PLAYER_COORD`/`P_COORD` = GetEntityCoords(PlayerPedId())
 

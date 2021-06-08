@@ -5,7 +5,7 @@ Citizen.CreateThread(function()
         DrawCoords()
 
         -- Draw Player Location / Spawn Location
-        local player = GetPlayerPed()
+        local player = PlayerPedId()
         local pCoords = GetEntityCoords(player)
         local pDir = GetEntityHeading(player)
 
@@ -241,7 +241,7 @@ function ConvertArg(arg)
     elseif arg == "PLAYER_ID" or arg == "P_ID" then
         return PlayerId()
     elseif arg == "PLAYER_PED" or arg == "P_PED" then
-        return GetPlayerPed()
+        return PlayerPedId()
     elseif arg == "PLAYER_COORD" or arg == "P_COORD" then
         local player = PlayerPedId()
         local coords = GetEntityCoords(player)
@@ -315,7 +315,7 @@ end)
 
 RegisterCommand("golden", function(source, args, rawCommand)
     Citizen.CreateThread(function()
-        local player = GetPlayerPed()
+        local player = PlayerPedId()
         Citizen.InvokeNative(0xC6258F41D86676E0, player, 0, 100) -- SetAttributeCoreValue
         Citizen.InvokeNative(0xC6258F41D86676E0, player, 1, 100) -- SetAttributeCoreValue
         Citizen.InvokeNative(0xC6258F41D86676E0, player, 2, 100) -- SetAttributeCoreValue
@@ -358,7 +358,7 @@ end)
 
 RegisterCommand("loadout", function(source, args, rawCommand)
     Citizen.CreateThread(function()
-        local player = GetPlayerPed()
+        local player = PlayerPedId()
         Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_KNIFE'), 0, true, 0)
         Citizen.Wait(750)
         Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey('WEAPON_MELEE_KNIFE_JAWBONE'), 0, true, 0)
@@ -390,25 +390,25 @@ RegisterCommand("loadout", function(source, args, rawCommand)
 end)
 
 RegisterCommand('bow_test', function(source, args, rawCommand)
-    RemoveAllPedWeapons(GetPlayerPed(), true, true)
-    GiveWeaponToPed_2(GetPlayerPed(), GetHashKey('WEAPON_BOW'), 0, false, true, 0, false, 0.5, 1.0, 752097756, false, 0.0, false)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW'), 6, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_IMPROVED'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_SMALL_GAME'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_FIRE'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_POISON'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_TRACKING'), 5, 752097756)
-    Citizen.InvokeNative(0x106A811C6D3035F3, GetPlayerPed(), GetHashKey('AMMO_ARROW_DYNAMITE'), 5, 752097756)
-    Citizen.InvokeNative(0xADF692B254977C0C, GetPlayerPed(), GetHashKey('WEAPON_BOW'), true, 0, false, false)
-    Citizen.InvokeNative(0xCC9C4393523833E2, GetPlayerPed(), GetHashKey('WEAPON_BOW'), GetHashKey('AMMO_ARROW_DYNAMITE'))
+    RemoveAllPedWeapons(PlayerPedId(), true, true)
+    GiveWeaponToPed_2(PlayerPedId(), GetHashKey('WEAPON_BOW'), 0, false, true, 0, false, 0.5, 1.0, 752097756, false, 0.0, false)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW'), 6, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_IMPROVED'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_SMALL_GAME'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_FIRE'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_POISON'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_TRACKING'), 5, 752097756)
+    Citizen.InvokeNative(0x106A811C6D3035F3, PlayerPedId(), GetHashKey('AMMO_ARROW_DYNAMITE'), 5, 752097756)
+    Citizen.InvokeNative(0xADF692B254977C0C, PlayerPedId(), GetHashKey('WEAPON_BOW'), true, 0, false, false)
+    Citizen.InvokeNative(0xCC9C4393523833E2, PlayerPedId(), GetHashKey('WEAPON_BOW'), GetHashKey('AMMO_ARROW_DYNAMITE'))
 end)
 
 RegisterCommand("weapon", function(source, args, rawCommand) -- GIVES A WEAPON
     if args[1] == nil then
         print("Please set the specific name for weapon")
     else
-        local player = GetPlayerPed()
+        local player = PlayerPedId()
         Citizen.InvokeNative(0xB282DC6EBD803C75, player, GetHashKey(args[1]), 500, true, 0)
         -- 0xB190BCA3F4042F95     P_ID    HASH_WEAPON_BOW      10   -   GIVE DEFAULT AMMO FOR WEAPON
         -- 0x106A811C6D3035F3     P_ID    HASH_AMMO_ARROW      10   -   GIVE SPECIFIC AMMO
@@ -417,7 +417,7 @@ RegisterCommand("weapon", function(source, args, rawCommand) -- GIVES A WEAPON
 end, false)
 
 RegisterCommand('spawn', function(source, args, rawCommand)
-    local player = GetPlayerPed()
+    local player = PlayerPedId()
     local pCoords = GetEntityCoords(player)
     local pDir = GetEntityHeading(player)
     -- 0x405180B14DA5A935 SetPedType(entity, ??) -- Always makes PedType 4
@@ -454,7 +454,7 @@ RegisterCommand("hash", function(source, args, rawCommand) -- GIVES A WEAPON
 end, false)
 
 RegisterCommand('vehicle', function(source, args, rawCommand)
-    local player = GetPlayerPed()
+    local player = PlayerPedId()
     local pCoords = GetEntityCoords(player)
     local pDir = GetEntityHeading(player)
     -- 0x405180B14DA5A935 SetPedType(entity, ??) -- Always makes PedType 4
