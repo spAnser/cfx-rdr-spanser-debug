@@ -10,6 +10,15 @@ local Qualities = {
     'Perfect'
 }
 
+local DoorState = {
+    [-1] = 'DOORSTATE_INVALID',
+    [0] = 'DOORSTATE_UNLOCKED',
+    [1] = 'DOORSTATE_LOCKED_UNBREAKABLE',
+    [2] = 'DOORSTATE_LOCKED_BREAKABLE',
+    [3] = 'DOORSTATE_HOLD_OPEN_POSITIVE',
+    [4] = 'DOORSTATE_HOLD_OPEN_NEGATIVE',
+}
+
 function DrawEntityInfo(entity)
     if entity == PlayerPedId() then
         return
@@ -58,14 +67,14 @@ function DrawEntityInfo(entity)
     end
     str = str .. " | Carcass Quality: " .. Qualities[eCarcassQuality + 1]
 
-    local pedQuality = Citizen.InvokeNative(0x7BCC6087D130312A, entity)
+    local pedQuality = Citizen.InvokeNative(0x7BCC6087D130312A, entity) -- Set with 0xCE6B874286D640BB
     str = str .. " | Ped Quality: " .. tostring(pedQuality)
     -- Dont know for what purpose but thats what i got from dec scripts maybe related to rare animals?
     --  2: "PED_QUALITY_HIGH"
     --  1: "PED_QUALITY_MEDIUM"
     --  0: "PED_QUALITY_LOW"
     -- -1: you should interpret as "PED_QUALITY_HIGH"
-    local carry_config = Citizen.InvokeNative(0x0FD25587BB306C86, entity) -- Set with 0xCE6B874286D640BB
+    local carry_config = Citizen.InvokeNative(0x0FD25587BB306C86, entity)
     if carry_config then
         local carry_config_name = GetHashName(carry_config)
         if carry_config_name then
@@ -205,7 +214,7 @@ function DrawItemInfo(entity)
         --     doorClosed = 'Opening'
         -- end
         str = str .. 'Door Hash: ' .. tostring(DOOR_ENTITIES[entity])
-        str = str .. '\nState: ' .. tostring(DoorSystemGetDoorState(DOOR_ENTITIES[entity])) .. ' | ' .. doorClosed .. ' : ' .. tostring(DoorSystemGetOpenRatio(DOOR_ENTITIES[entity]))
+        str = str .. '\nState: ' .. DoorState[DoorSystemGetDoorState(DOOR_ENTITIES[entity])] .. ' | ' .. doorClosed .. ' : ' .. tostring(DoorSystemGetOpenRatio(DOOR_ENTITIES[entity]))
         str = str .. '\nRotation: ' .. tostring(GetEntityRotation(entity))
         str = str .. '\nHeading: ' .. tostring(GetEntityHeading(entity))
     end
